@@ -1,0 +1,5 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target" : { "namespace": "android_app", "package_name": "com.cardtone.application",
+               "sha256_cert_fingerprints": ["E5:4A:88:94:39:2C:C2:D9:CC:48:FE:E2:2E:C1:53:C9:0D:E7:52:E2:B9:ED:F9:64:17:5C:5B:16:E7:8E:5A:FF"] }
+}]
