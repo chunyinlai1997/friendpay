@@ -196,6 +196,7 @@
   }
   else if($verified == 3){
     if($status == "inactive"){
+      require_once 'googleLib/GoogleAuthenticator.php';
       $sql_auth = mysql_query("SELECT Users.google_auth_code, Users.email, Users.two_factor FROM Users WHERE Users.id='$id'")or die(mysql_error());
       $result_auth = mysql_fetch_array($sql_auth,MYSQL_NUM);
       $google_auth_code = $result_auth[0];
