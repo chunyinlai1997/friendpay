@@ -3,7 +3,7 @@
   include_once 'token.php';
 
   if(!isloggedin()){
-    header('Location:sign-in');
+    header("Location:sign-in?need_login=True");
   }
   if(isVerified() && isActive()){
     header('Location:dashboard');
@@ -20,7 +20,7 @@
   $form = "<form action='account_issue' method='post'>
   <div class='form-group'>
     <div class='input-group'>
-    <input type='email' id='inputEmail' name='email' placeholder='Input a valid email address' class='form-control' required>
+    <input autofocus type='email' id='inputEmail' name='email' placeholder='Input a valid email address' class='form-control' required>
     </div>
     <div id='invalidEmailAlt' class='invalid-feedback' style='display:none;'>
     </div>
@@ -31,12 +31,12 @@
   </form>";
   $give = "<button type='submit' id='submit2' name='submit2' value='submit2' class='btn bg-amber waves-effect'><i class='material-icons'>drafts</i>Request for New Verification Email</button>";
   $id = getUserId();
-  $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
+  $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.profile_img FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
   $row = mysql_fetch_array($sql,MYSQL_NUM);
   $firstname = $row[0];
   $lastname = $row[1];
   $email = $row[2];
-
+  $profile_img =  $row[3];
   if(isset($_POST['submit1'])){
     $id = isloggedin();
     $email = clean($_POST['email']);
@@ -177,7 +177,7 @@
          <div class='form-group'>
            <div class='input-group'>
            Code:
-           <input type='text' id='inputGoogleAuthCode' name='code1' minlength='6' maxlength='6' placeholder='Input 6-digit code here' class='form-control' required>
+           <input autofocus type='text' id='inputGoogleAuthCode' name='code1' minlength='6' maxlength='6' placeholder='Input 6-digit code here' class='form-control' required>
            <div id='invalidGoogleAuthCode' class='invalid-feedback' style='display:none;'>
            </div>
            </div>
@@ -218,7 +218,7 @@
         <div class='form-group'>
           <div class='input-group'>
           Input 6-digit authentication code in Google Authenticator app:
-          <input type='text' id='inputGoogleAuthCode2' name='code2' minlength='6' maxlength='6' placeholder='Input 6-digit code here' class='form-control' required>
+          <input autofocus type='text' id='inputGoogleAuthCode2' name='code2' minlength='6' maxlength='6' placeholder='Input 6-digit code here' class='form-control' required>
           <div id='invalidGoogleAuthCode2' class='invalid-feedback' style='display:none;'>
           </div>
           </div>
@@ -231,7 +231,7 @@
       </div>
       </div>
       </div>
-          ";
+      ";
     }
     else if($status == "blocked"){
       $content = leaveBlocked();
@@ -333,13 +333,6 @@
 <head>
 	<title> Account Issue | Friend Pay</title>
 	<?php include 'head-info.php'; ?>
-  <!--<link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
-  <link href="plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
-  <link href="plugins/node-waves/waves.css" rel="stylesheet" />
-  <link href="plugins/animate-css/animate.css" rel="stylesheet" />
-  <link href="css/style.css" rel="stylesheet">
-  <link href="css/themes/all-themes.css" rel="stylesheet" />-->
 </head>
 
 <body class="theme-green">
@@ -370,14 +363,22 @@
             <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
+                      <a href="profile" role="button">
+                          <i class="material-icons">person</i>
+                      </a>
+                    </li>
+
+                    <li class="dropdown">
                         <?php
                           $cook =  $_COOKIE['SNID_'];
                           $link = "sign-out?logout=".$cook;
                         ?>
+
                         <a href="<?php echo $link;?>" role="button">
                             <i class="material-icons">logout</i>
                         </a>
                     </li>
+
                 </ul>
             </div>
         </div>
@@ -387,7 +388,7 @@
         <aside id="leftsidebar" class="sidebar">
             <div class="user-info">
                 <div class="image">
-                    <img src="images/user.png" width="48" height="48" alt="User" />
+                    <img src="<?php echo $profile_img; ?>" width="48" height="48" alt="User" />
                 </div>
                 <div class="info-container">
                     <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $firstname." ".$lastname; ?></div>
@@ -397,16 +398,34 @@
             <div class="menu">
                 <ul class="list">
                     <li class="header">Menu</li>
-                    <li class="active">
+                    <li>
                         <a href="dashboard">
-                            <i class="material-icons">error</i>
-                            <span>Account Issue</span>
+                            <i class="material-icons">home</i>
+                            <span>Home</span>
                         </a>
                     </li>
                     <li>
-                        <a href="profile">
-                            <i class="material-icons">person</i>
-                            <span>Profile</span>
+                        <a href="activity">
+                            <i class="material-icons">history</i>
+                            <span>Activity</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="send_request">
+                            <i class="material-icons">cached</i>
+                            <span>Send and Request</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="wallet">
+                            <i class="material-icons">account_balance_wallet</i>
+                            <span>Wallet</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="material-icons">help</i>
+                            <span>Help</span>
                         </a>
                     </li>
                 </ul>
@@ -424,6 +443,7 @@
         </aside>
 
     </section>
+
 
     <section class="content">
         <div class="container-fluid">
@@ -589,6 +609,5 @@
     <script src="js/admin.js"></script>
     <script src="js/pages/index.js"></script>
     <script src="js/demo.js"></script>
-
   </body>
 </html>

@@ -73,8 +73,8 @@
 					//temp direct to index
 					//header("Location:index");
 					mysql_query("INSERT INTO Token(token,user_id,ip_address) VALUES('$h_token ','$user_id','$ipaddress')");
-					setcookie("SNID",$token,time()+60*60*24*1,'/',NULL,NULL,TRUE);	//first login token will expire after 24 hours
-					setcookie("SNID_",'1',time()+60*60*24*0.5,'/',NULL,NULL,TRUE);	//second login token will expire after 12 hours
+					setcookie("SNID",$token,time()+60*60*1,'/',NULL,NULL,TRUE);	//first login token will expire after 1 hours
+					setcookie("SNID_",'1',time()+60*60*0.5,'/',NULL,NULL,TRUE);	//second login token will expire after 30 minutes
 					if($role =="client"){
 						if($verified == 0){
 							$logstatus = "success with account issue (not verified)";

@@ -2,8 +2,8 @@
   include_once 'config.php';
   include_once 'token.php';
 
-
-  echo $_POST["enc"]." ".$_POST["uid"];
+  $g = isloggedin();
+  echo $g;
 
 
 
