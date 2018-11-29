@@ -26,7 +26,7 @@
 
 <html lang="en">
 <head>
-	<title> Profile | Friend Pay</title>
+	<title> Dashboard | Friend Pay</title>
 	<?php include 'head-info.php'; ?>
 </head>
 
@@ -176,6 +176,36 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <a href="fucker">
+                    <div class="demo-color-box bg-teal">
+                        <div class="color-code"></div>
+                        <div class="color-name">SEND</div>
+                    </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <a href="fucker">
+                    <div class="demo-color-box bg-indigo">
+                        <div class="color-code"></div>
+                        <div class="color-name">REQUEST</div>
+                    </div>
+                    </a>
+                </div>
+
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <a href="fucker">
+                    <div class="demo-color-box bg-teal">
+                        <div class="color-name">TEAL</div>
+                        <div class="color-code">#009688</div>
+                        <div class="color-class-name">bg-teal</div>
+                    </div>
+                    </a>
+                </div>
+
+
             </div>
 
               <div class="row clearfix">
