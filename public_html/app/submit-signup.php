@@ -1,6 +1,7 @@
 <?php
   include_once 'config.php';
   include_once 'token.php';
+  include_once 'encrypt_decrypt.php';
 
   if(isloggedin()){
     header('Location:dashboard');
@@ -44,14 +45,16 @@
         $hashed_password = password_hash("$password", PASSWORD_BCRYPT, $options);
     		$v_hash = md5(rand(0,1000));
         $v = 0;
-        //$profiledefaultimg = "https://i.imgur.com/mNrotks.png";
+
         require_once 'googleLib/GoogleAuthenticator.php';
         $ga = new GoogleAuthenticator();
         $secretGoogleAuth = $ga -> createSecret();
+        $secretGoogleAuth = encrypt($secretGoogleAuth);
     		mysql_query("INSERT INTO Users(email,password,join_date,create_date,verified,verify_hash,role,google_auth_code) VALUES('$email','$hashed_password','$join','$join','$v','$v_hash','client','$secretGoogleAuth')")or die(mysql_error());
     		$sql = mysql_query("SELECT id FROM Users WHERE email ='$email'")or die(mysql_error());
         $result = mysql_fetch_array($sql,MYSQL_NUM);
     		$mid =  $result[0];
+
         mysql_query("INSERT INTO Client(user_id,lastname,firstname,phone) VALUES('$mid','$lastname','$firstname','$phone')")or die(mysql_error());
     		send_email($firstname,$lastname,$email,$v_hash);
       }
@@ -66,6 +69,7 @@
   function send_email($fname,$lname,$email,$v_hash){
   	$to      = $email; // Send email to our user
   	$subject = ' Account Verification | Friend Pay'; // Give the email a subject
+    $v_hash = encrypt($v_hash);
   	$message = "
   	Dear $fname $lname,
 

@@ -1,13 +1,14 @@
 <?php
 	include_once 'config.php';
 	include_once 'token.php';
+	include_once 'encrypt_decrypt.php';
 
   $msg="";
 	$flag="Verification Fail";
 	if(isset($_GET['v']) && !empty($_GET['v']) AND isset($_GET['e']) && !empty($_GET['e']) AND isset($_GET['h']) && !empty($_GET['h'])){
 		if($_GET['v']=="activate"){
 			$email = mysql_escape_string($_GET['e']);
-			$hash = mysql_escape_string($_GET['h']);
+			$hash = decrypt(mysql_escape_string($_GET['h']));
 			$sql = mysql_query("SELECT id, email, verified, verify_hash FROM Users WHERE email='$email' AND verify_hash='$hash'") or die(mysql_error());
 			$row = mysql_fetch_array($sql,MYSQL_NUM);
 			$match  = mysql_num_rows($sql);
@@ -58,6 +59,7 @@
   function send_email($fname,$lname,$email,$v_hash){
   	$to      = $email; // Send email to our user
   	$subject = ' Account Verification | Friend Pay'; // Give the email a subject
+		$v_hash = encrypt($v_hash);
   	$message = "
   	Dear $fname $lname,
 

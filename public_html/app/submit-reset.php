@@ -13,7 +13,7 @@
 
       $sql2 = mysql_query("SELECT Users.verify_hash, Client.lastname, Client.firstname, Users.email, Users.two_factor, Users.verified FROM Users, Client WHERE Users.id ='$uid' and Users.id = Client.user_id ")or die(mysql_error());
       $result2 = mysql_fetch_array($sql2,MYSQL_NUM);
-      $v_hash =  $result2[0];
+      $v_hash =  decrypt($result2[0]);
       $verified = $result2[5];
       $match  = mysql_num_rows($sql2);
 

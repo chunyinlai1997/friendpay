@@ -56,6 +56,7 @@
   function send_email($fname,$lname,$email,$v_hash){
   	$to      = $email; // Send email to our user
   	$subject = ' Reset Password | Friend Pay'; // Give the email a subject
+    $v_hash = encrypt($v_hash);
   	$message = "
   	Dear $fname $lname,
 
