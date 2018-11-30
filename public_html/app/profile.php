@@ -1,11 +1,11 @@
 <?php
   include_once 'config.php';
   include_once 'token.php';
+  include_once 'encrypt_decrypt.php';
 
   if(!isloggedin()){
     header("Location:sign-in?need_login=True");
   }
-
 
   $id = getUserId();
   $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.create_date, Client.phone, Users.verified, Users.profile_img, Users.status, Users.two_factor FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
@@ -23,6 +23,8 @@
   $row2 = mysql_fetch_array($sql2,MYSQL_NUM);
   $last_login_time = $row2[0];
   $last_login_status = "";
+  $alt = "";
+
   if($row2[1]!="fail"){
     $last_login_status = "success";
   }
@@ -30,37 +32,85 @@
     $last_login_status = "fail";
   }
 
-  //https://imgur.com/#access_token=9d80a5579bea50b9dbdaad0528ee66d08da6ecca&expires_in=315360000&token_type=bearer&refresh_token=587cb7de7f31ccb9b20ab18356dc84928fe30bf3&account_username=chunyinlai1997&account_id=75370421
-  // imgur ClientID: 7424eb4ea028890
-  // imgur Client secret:	ab16c127c11e69bd00cac7fd20e475bbd6a640bf
   if(isset($_GET["update"])&&$_GET["update"]=="profileimg"){
     header("Location:profile");
   }
 
   if(isset($_POST['uploadprofile'])){
+    	$image = base64_encode(file_get_contents($_FILES['profileimg']['tmp_name']));
+    	$options = array('http'=>array(
+    		'method'=>"POST",
+    		'header'=>"Authorization: Bearer 9d80a5579bea50b9dbdaad0528ee66d08da6ecca\n"."Content-Type: application/x-ww-form-urlencoded",
+    		'content'=>$image
+    	));
 
-  	$image = base64_encode(file_get_contents($_FILES['profileimg']['tmp_name']));
+    	$context = stream_context_create($options);
+    	$imgurURL = "https://api.imgur.com/3/image";
+    	$response = file_get_contents($imgurURL, false, $context);
+    	$res = json_decode($response);
+    	$imagelink = $res->data->link;
+    	mysql_query("UPDATE Users SET profile_img='$imagelink' WHERE id = '$id' ");
+      header("Location:profile?update=profileimg");
+    }
 
-  	$options = array('http'=>array(
-  		'method'=>"POST",
-  		'header'=>"Authorization: Bearer 9d80a5579bea50b9dbdaad0528ee66d08da6ecca\n"."Content-Type: application/x-ww-form-urlencoded",
-  		'content'=>$image
-  	));
+    if(isset($_POST["change_password_submit"])){
+      require_once 'googleLib/GoogleAuthenticator.php';
+      $sql_auth = mysql_query("SELECT Users.google_auth_code, Users.email, Users.two_factor, Users.password FROM Users WHERE Users.id='$id'")or die(mysql_error());
+      $result_auth = mysql_fetch_array($sql_auth,MYSQL_NUM);
+      $google_auth_code = decrypt($result_auth[0]);
+      $ga = new GoogleAuthenticator();
+      $code = $_POST["inputGoogleAuthCode"];
+      $checkResult = $ga->verifyCode($google_auth_code, $code, 2);
+      if($checkResult){
+        if(!empty($_POST["OldPassword"])){
+          $OldPassword = clean($_POST["OldPassword"]);
+          if(password_verify($OldPassword, $result_auth[3])){
+            $password = clean($_POST['NewPassword']);
+            if($password!=$_POST['NewPassword']){
+             $alt =  "<div class='alert alert-danger' role='alert'>Timeout! Please try again.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+            }
+            else{
+              $options = [
+                  'cost' => 9,
+              ];
+              $hashed_password = password_hash("$password", PASSWORD_BCRYPT, $options);
+              mysql_query("UPDATE Users SET password='$hashed_password' WHERE id = '$id'");
+              send_email($firstname,$lastname,$email);
+              $alt = "<div class='alert alert-success' role='alert'>Your password has changed successfully.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+            }
+          }
+          else {
+            $alt =  "<div class='alert alert-danger' role='alert'>Wrong Password! Please try again.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+          }
+        }
+        else {
+          $alt =  "<div class='alert alert-danger' role='alert'>Empty Password Change Submission! Please try again.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+        }
+      }
+      else{
+        $alt =  "<div class='alert alert-danger' role='alert'>Wrong code! Please try again.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+      }
+    }
 
-  	$context = stream_context_create($options);
+    function send_email($fname,$lname,$email){
+    	$to      = $email; // Send email to our user
+    	$subject = ' Password Changed | Friend Pay'; // Give the email a subject
+    	$message = "
+    	Dear $fname $lname,
 
-  	$imgurURL = "https://api.imgur.com/3/image";
+    	Your account password has been changed through passsowrd setting.
 
-  	$response = file_get_contents($imgurURL, false, $context);
+      This is a system-generated email.  Please do not reply.
+      If you did not use our service, please ignore this email.
 
-  	$res = json_decode($response);
+    	Best Regards,
 
-  	$imagelink = $res->data->link;
+    	Friend Pay Team
+    	";
 
-  	mysql_query("UPDATE Users SET profile_img='$imagelink' WHERE id = '$id' ");
-
-    header("Location:profile?update=profileimg");
-  }
+    	$headers = 'From:noreply@friendpay.com' . "\r\n";
+    	mail($to, $subject, $message, $headers);
+    }
 ?>
 <html lang="en">
 <head>
@@ -120,10 +170,11 @@
         <aside id="leftsidebar" class="sidebar">
             <div class="user-info">
                 <div class="image">
-                    <img src="<?php echo $profile_img; ?>" width="48" height="48" alt="User" />
+                    <a href="profile"><img src="<?php echo $profile_img; ?>" width="48" height="48" alt="User" /></a>
                 </div>
                 <div class="info-container">
                     <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $firstname." ".$lastname; ?></div>
+                    <div class="email" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $email; ?></div>
                 </div>
             </div>
 
@@ -218,13 +269,10 @@
                             </li>
                             <li>
                                 <span>Last Login</span>
-                                <span><?php echo $last_login_time;?></span>
+                                <span><small><?php echo $last_login_time."(".$last_login_status.")";?></small></span>
 
                             </li>
-                            <li>
-                              <span></span>
-                              <span><?php echo $last_login_status;?></span>
-                            </li>
+
                           </ul>
                         </div>
                     </div>
@@ -266,12 +314,23 @@
                                         Billing Address
                                     </div>
                                     <div class="content">
-                                        <?php echo "address"; ?>
+                                        <?php
+                                        if($address!=""){
+                                          echo $address;
+                                        }
+                                        else{
+                                          echo "No billing address yet";
+                                        }
+                                         ?>
                                     </div>
                                 </li>
                             </ul>
                         </div>
                     </div>
+                </div>
+
+                <div class="col-xs-12 col-sm-9">
+                  <? echo $alt;?>
                 </div>
 
                 <div class="col-xs-12 col-sm-9">
@@ -286,67 +345,96 @@
 
                                 <div class="tab-content">
                                     <div role="tabpanel" class="tab-pane fade in active" id="friend">
+                                      <div class="list-unstyled row clearfix">
+                                        <div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
+                                          <div class="image-area">
+                                              <img src="<?php echo $profile_img; ?>"  width="128" height="128" alt="Profile Image" />
+                                          </div>
+                                        </div>
 
+
+                                      </div>
                                     </div>
 
 
                                     <div role="tabpanel" class="tab-pane fade in" id="profile_settings">
-                                        <form class="form-horizontal">
+                                        <form action="profile" method="POST" class="form-horizontal">
                                             <div class="form-group">
-                                                <label for="NameSurname" class="col-sm-2 control-label">Name Surname</label>
+                                                <label for="firstname" class="col-sm-2 control-label">First Name</label>
                                                 <div class="col-sm-10">
                                                     <div class="form-line">
-                                                        <input type="text" class="form-control" id="NameSurname" name="NameSurname" placeholder="Name Surname" value="Marc K. Hammond" required>
+                                                      <input autocomplete="off" type="text" name="firstname" id="inputfirstname" class="form-control" onkeyup="safeName(this)" placeholder="Your first name" autofocus inlength="1" maxlength="255" required/>
+                                                      <div id="invalidfirstname" class="invalid-feedback" style="display:none;">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="Email" class="col-sm-2 control-label">Email</label>
+                                                <label for="lastname" class="col-sm-2 control-label">Last Name</label>
                                                 <div class="col-sm-10">
                                                     <div class="form-line">
-                                                        <input type="email" class="form-control" id="Email" name="Email" placeholder="Email" value="example@example.com" required>
+                                                      <input autocomplete="off" type="text" name="lastname" id="inputlastname" class="form-control" onkeyup="safeName(this)" placeholder="Your last name" minlength="1" maxlength="255" required/>
+                                                      <div id="invalidlastname" class="invalid-feedback" style="display:none;">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="InputExperience" class="col-sm-2 control-label">Experience</label>
-
+                                                <label for="email" class="col-sm-2 control-label">Email</label>
                                                 <div class="col-sm-10">
                                                     <div class="form-line">
-                                                        <textarea class="form-control" id="InputExperience" name="InputExperience" rows="3" placeholder="Experience"></textarea>
+                                                      <input autocomplete="off" type="email" name="email" id="inputEmail" class="form-control" placeholder="Your email address" required />
+                                                      <div id="invalidemail" class="invalid-feedback" style="display:none;">
+                                                        Please provide a valid email address
+                                                      </div>
+                                                      <div id="invalidemail2" class="invalid-feedback" style="display:none;">
+                                                      </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="InputSkills" class="col-sm-2 control-label">Skills</label>
-
+                                                <label for="phone" class="col-sm-2 control-label">Last Name</label>
                                                 <div class="col-sm-10">
                                                     <div class="form-line">
-                                                        <input type="text" class="form-control" id="InputSkills" name="InputSkills" placeholder="Skills">
+                                                      <input autocomplete="off" type="phone" min-length="8" max-length="8" name="phone" id="inputPhone" class="form-control" placeholder="Your phone number" required />
+                                                      <div id="invalidphonenumber" class="invalid-feedback" style="">
                                                     </div>
                                                 </div>
                                             </div>
-
+                                            <div class="form-group">
+                                                <label for="address" class="col-sm-2 control-label">Billing Address</label>
+                                                <div class="col-sm-10">
+                                                    <div class="form-line">
+                                                        <input autocomplete="off" type="text" name="address" id="address" class="form-control" onkeyup="safeName(this)" placeholder="Your last name" minlength="1" maxlength="255" required/>
+                                                        <div id="invalidaddress" class="invalid-feedback" style="display:none;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="OldPassword" class="col-sm-3 control-label">Current Password</label>
+                                                <div class="col-sm-9">
+                                                    <div class="form-line">
+                                                        <input autofocus type="password" class="form-control" id="OldPassword" name="OldPassword" placeholder="Current Password" required>
+                                                    </div>
+                                                    <div id="invalidOldPassword" class="invalid-feedback" style="display:none;">
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="form-group">
                                                 <div class="col-sm-offset-2 col-sm-10">
-                                                    <input type="checkbox" id="terms_condition_check" class="chk-col-red filled-in" />
-                                                    <label for="terms_condition_check">I agree to the <a href="#">terms and conditions</a></label>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="col-sm-offset-2 col-sm-10">
-                                                    <button type="submit" class="btn btn-danger">SUBMIT</button>
+                                                    <button type="submit" id="change_profile_submit" name="change_profile_submit" value="change_profile_submit" class="btn btn-danger">SUBMIT</button>
                                                 </div>
                                             </div>
                                         </form>
                                     </div>
+
                                     <div role="tabpanel" class="tab-pane fade in" id="change_password_settings">
-                                        <form class="form-horizontal">
+                                        <form action="profile.php" method="POST" class="form-horizontal">
                                             <div class="form-group">
-                                                <label for="OldPassword" class="col-sm-3 control-label">Old Password</label>
+                                                <label for="OldPassword" class="col-sm-3 control-label">Current Password</label>
                                                 <div class="col-sm-9">
                                                     <div class="form-line">
-                                                        <input type="password" class="form-control" id="OldPassword" name="OldPassword" placeholder="Old Password" required>
+                                                        <input autofocus type="password" class="form-control" id="OldPassword" name="OldPassword" placeholder="Current Password" required>
+                                                    </div>
+                                                    <div id="invalidOldPassword" class="invalid-feedback" style="display:none;">
                                                     </div>
                                                 </div>
                                             </div>
@@ -354,22 +442,35 @@
                                                 <label for="NewPassword" class="col-sm-3 control-label">New Password</label>
                                                 <div class="col-sm-9">
                                                     <div class="form-line">
-                                                        <input type="password" class="form-control" id="NewPassword" name="NewPassword" placeholder="New Password" required>
+                                                        <input type="password" class="form-control" id="NewPassword" onkeyup="validatePass(this.value)" minlength="8" name="NewPassword" placeholder="New Password" required>
+                                                    </div>
+                                                    <div id="invalidNewPassword" class="invalid-feedback" style="display:none;">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="NewPasswordConfirm" class="col-sm-3 control-label">New Password (Confirm)</label>
+                                                <label for="NewPasswordConfirm" class="col-sm-3 control-label">Confirm New Password</label>
                                                 <div class="col-sm-9">
                                                     <div class="form-line">
-                                                        <input type="password" class="form-control" id="NewPasswordConfirm" name="NewPasswordConfirm" placeholder="New Password (Confirm)" required>
+                                                        <input type="password" class="form-control" id="NewPasswordConfirm" name="NewPasswordConfirm" onkeyup="checkPass(this)" minlength="8" placeholder="Confirm New Password" required>
+                                                    </div>
+                                                    <div id="invalidNewPasswordConfirm" class="invalid-feedback" style="display:none;">
                                                     </div>
                                                 </div>
                                             </div>
-
+                                            <div class="form-group">
+                                                <label for="inputGoogleAuthCode" class="col-sm-3 control-label">Google Authenticator Code</label>
+                                                <div class="col-sm-9">
+                                                    <div class="form-line">
+                                                        <input type="text" class="form-control" id="inputGoogleAuthCode" name="inputGoogleAuthCode" placeholder="6-digit 2 factor authentication code" required>
+                                                    </div>
+                                                    <div id="invalidGoogleAuthCode" class="invalid-feedback" style="display:none;">
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="form-group">
                                                 <div class="col-sm-offset-3 col-sm-9">
-                                                    <button type="submit" class="btn btn-danger">SUBMIT</button>
+                                                    <button type="submit" name="change_password_submit" id="change_password_submit" value="change_password_submit" class="btn btn-danger" disabled>SUBMIT</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -415,21 +516,150 @@
     <script>
     $(document).ready(function(){
       $("#profileimg").change(function () {
-  				var fileExtension = ['jpeg', 'jpg', 'png', 'gif', 'bmp'];
-  				if ($.inArray($(this).val().split('.').pop().toLowerCase(), fileExtension) == -1) {
-  						alert("Only formats are allowed : "+ fileExtension.join(', '));
-  						document.getElementById("profileimg").classList.add('is-invalid');
-  						document.getElementById("profileimg").classList.remove('is-valid');
-  						$('#uploadprofile').attr("disabled",true);
-  				}
-  				else{
-  						document.getElementById("profileimg").classList.add('is-valid');
-  						document.getElementById("profileimg").classList.remove('is-invalid');
-  						$('#uploadprofile').attr("disabled",false);
+          var fileExtension = ['jpeg', 'jpg', 'png', 'gif', 'bmp'];
+          if ($.inArray($(this).val().split('.').pop().toLowerCase(), fileExtension) == -1) {
+              alert("Only formats are allowed : "+ fileExtension.join(', '));
+              document.getElementById("profileimg").classList.add('is-invalid');
+              document.getElementById("profileimg").classList.remove('is-valid');
+              $('#uploadprofile').attr("disabled",true);
+          }
+          else{
+              document.getElementById("profileimg").classList.add('is-valid');
+              document.getElementById("profileimg").classList.remove('is-invalid');
+              $('#uploadprofile').attr("disabled",false);
 
-  				}
-  		});
+          }
+      });
+
+      $("#OldPassword").change(function () {
+        var old = $(this).val();
+        $.ajax({
+          url:"check.php",
+          method:"POST",
+          data:{checkPass:old},
+          dataType:"text",
+          success:function(response){
+            if(response==1){
+              $('#invalidOldPassword').css("color","green");
+              $('#invalidOldPassword').css("display", "block");
+              $('#invalidOldPassword').html("Correct Password");
+              $('#OldPassword').removeClass( "is-invalid" ).addClass( "is-valid" );
+            }
+            else{
+              $('#invalidOldPassword').css("color","red");
+              $('#invalidOldPassword').css("display", "block");
+              $('#invalidOldPassword').html("Wrong Password");
+              $('#OldPassword').removeClass( "is-valid" ).addClass( "is-invalid" );
+            }
+            finalCheckChangePassword();
+          },
+        });
+      });
+
+      $('#inputGoogleAuthCode').change(function(){
+        var code = $(this).val().length;
+        var num = $(this).val();
+        if(code==6&&checkNumber(num)){
+          $('#invalidGoogleAuthCode').css("color","green");
+          $('#invalidGoogleAuthCode').css("display", "block");
+          $('#invalidGoogleAuthCode').html("");
+          $('#inputGoogleAuthCode').removeClass( "is-invalid" ).addClass( "is-valid" );
+        }
+        else{
+          $('#invalidGoogleAuthCode').css("color","red");
+          $('#invalidGoogleAuthCode').css("display", "block");
+          $('#invalidGoogleAuthCode').html("Please input 6-digit code!");
+          $('#inputGoogleAuthCode').removeClass( "is-valid" ).addClass( "is-invalid" );
+        }
+        finalCheckChangePassword();
+      });
+
+      function checkNumber(n){
+        var regNumber = /^([0-9]{1,6})$/;
+        if(regNumber.test(n)){
+            return true;
+          }
+        else{
+          return false;
+        }
+      }
+
     });
+
+    function validatePass(pass){
+      if (pass.search(/[a-z]/) < 0) {
+        document.getElementById("NewPassword").classList.add('is-invalid');
+        document.getElementById("NewPassword").classList.remove('is-valid');
+        document.getElementById("invalidNewPassword").style.display = "block";
+        document.getElementById("invalidNewPassword").style.color = "red";
+        document.getElementById("invalidNewPassword").innerHTML = "Your password must contain a lower case letter";
+      }
+      else if(pass.search(/[A-Z]/) < 0) {
+        document.getElementById("NewPassword").classList.add('is-invalid');
+        document.getElementById("NewPassword").classList.remove('is-valid');
+        document.getElementById("invalidNewPassword").style.display = "block";
+        document.getElementById("invalidNewPassword").style.color = "red";
+        document.getElementById("invalidNewPassword").innerHTML = "Your password must contain an upper case letter";
+      }
+      else  if (pass.search(/[0-9]/) < 0) {
+        document.getElementById("NewPassword").classList.add('is-invalid');
+        document.getElementById("NewPassword").classList.remove('is-valid');
+        document.getElementById("invalidNewPassword").style.display = "block";
+        document.getElementById("invalidNewPassword").style.color = "red";
+        document.getElementById("invalidNewPassword").innerHTML = "Your password must contain a number";
+      }
+      else  if (pass.length < 8) {
+        document.getElementById("NewPassword").classList.add('is-invalid');
+        document.getElementById("NewPassword").classList.remove('is-valid');
+        document.getElementById("invalidNewPassword").style.display = "block";
+        document.getElementById("invalidNewPassword").style.color = "red";
+        document.getElementById("invalidNewPassword").innerHTML = "Your password is too short";
+      }
+      else{
+        document.getElementById("NewPassword").classList.remove('is-invalid');
+        document.getElementById("NewPassword").classList.add('is-valid');
+        document.getElementById("invalidNewPassword").style.display = "block";
+        document.getElementById("invalidNewPassword").innerHTML = "Valid password";
+        document.getElementById("invalidNewPassword").style.color = "green";
+      }
+      finalCheckChangePassword();
+    }
+
+    function checkPass(){
+
+      var pass1 = document.getElementById('NewPassword');
+      var pass2 = document.getElementById('NewPasswordConfirm');
+      if(pass1.value != pass2.value){
+        document.getElementById("NewPasswordConfirm").classList.add('is-invalid');
+        document.getElementById("NewPasswordConfirm").classList.remove('is-valid');
+        document.getElementById("invalidNewPasswordConfirm").style.display = "block";
+        document.getElementById("invalidNewPasswordConfirm").style.color = "red";
+        document.getElementById("invalidNewPasswordConfirm").innerHTML = "Password not match";
+      }
+      else
+      {
+        document.getElementById("NewPasswordConfirm").classList.remove('is-invalid');
+        document.getElementById("NewPasswordConfirm").classList.add('is-valid');
+        document.getElementById("invalidNewPasswordConfirm").style.display = "block";
+        document.getElementById("invalidNewPasswordConfirm").innerHTML = "Password match";
+        document.getElementById("invalidNewPasswordConfirm").style.color = "green";
+      }
+      finalCheckChangePassword();
+    }
+
+    function finalCheckChangePassword(){
+      var old = document.getElementById("OldPassword").classList.contains('is-valid');
+      var newP = document.getElementById("NewPassword").classList.contains('is-valid');
+      var newC = document.getElementById("NewPasswordConfirm").classList.contains('is-valid');
+      var code = document.getElementById("inputGoogleAuthCode").classList.contains('is-valid');
+      if(old && newP && newC && code){
+        document.getElementById("change_password_submit").disabled = false;
+      }
+      else{
+        document.getElementById("change_password_submit").disabled = true;
+      }
+    }
+
     </script>
     <script src="plugins/jquery/jquery.min.js"></script>
     <script src="plugins/bootstrap/js/bootstrap.js"></script>

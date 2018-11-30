@@ -388,10 +388,11 @@
         <aside id="leftsidebar" class="sidebar">
             <div class="user-info">
                 <div class="image">
-                    <img src="<?php echo $profile_img; ?>" width="48" height="48" alt="User" />
+                    <a href="profile"><img src="<?php echo $profile_img; ?>" width="48" height="48" alt="User" /></a>
                 </div>
                 <div class="info-container">
                     <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $firstname." ".$lastname; ?></div>
+                    <div class="email" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $email; ?></div>
                 </div>
             </div>
 
@@ -402,24 +403,6 @@
                         <a href="dashboard">
                             <i class="material-icons">home</i>
                             <span>Home</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="activity">
-                            <i class="material-icons">history</i>
-                            <span>Activity</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="send_request">
-                            <i class="material-icons">cached</i>
-                            <span>Send and Request</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="wallet">
-                            <i class="material-icons">account_balance_wallet</i>
-                            <span>Wallet</span>
                         </a>
                     </li>
                     <li>

@@ -82,10 +82,11 @@
         <aside id="leftsidebar" class="sidebar">
             <div class="user-info">
                 <div class="image">
-                    <img src="<?php echo $profile_img; ?>" width="48" height="48" alt="User" />
+                    <a href="profile"><img src="<?php echo $profile_img; ?>" width="48" height="48" alt="User" /></a>
                 </div>
                 <div class="info-container">
                     <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $firstname." ".$lastname; ?></div>
+                    <div class="email" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $email; ?></div>
                 </div>
             </div>
 
