@@ -208,7 +208,7 @@
 ?>
 <html lang="en">
 <head>
-	<title> Profile | Friend Pay</title>
+	<title> My Wallet | Friend Pay</title>
 	<?php include 'head-info.php'; ?>
 </head>
 
@@ -293,7 +293,7 @@
                             <span>Send and Request</span>
                         </a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="wallet">
                             <i class="material-icons">account_balance_wallet</i>
                             <span>Wallet</span>
@@ -325,142 +325,44 @@
     <section class="content">
         <div class="container-fluid">
             <div class="row clearfix">
+                <!--Wallet card-->
                 <div class="col-xs-12 col-sm-3">
-                    <div class="card profile-card">
-                        <div class="profile-header">&nbsp;</div>
-                        <div class="profile-body">
-                            <div class="image-area">
-                                <img src="<?php echo $profile_img; ?>"  width="128" height="128" alt="Profile Image" />
-                            </div>
-                            <div class="content-area">
-                                <a class="btn bg-pink waves-effect m-b-15 collapsed" role="button" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                                    Change Icon
-                                </a>
-                                <div class="collapse" id="collapseExample">
-                                    <div class="well">
-                                      <form action="profile" method="POST" enctype="multipart/form-data">
-                                      <label for="file">Choose an image to upload</label>
-                                      <input id="profileimg" name="profileimg" type="file">
-                                      </input>
-                                      <input type="submit" class="btn btn-primary" id="uploadprofile" name="uploadprofile" value="Upload" disabled>
-                                      </form>
-                                    </div>
-                                </div>
-                                <h3><?php echo $firstname." ".$lastname;?></h3>
-                                <p></p>
-                                <p>Since <? echo date("d-m-Y", strtotime($create_date)); ?></p>
-                            </div>
-                        </div>
-                        <div class="profile-footer">
-                          <ul>
-                            <li>
-                                <span>Account Status</span>
-                                <span><?php echo $status;?></span>
-                            </li>
-                            <li>
-                                <span>Two Factor Authentication</span>
-                                <span><?php echo $two_factor;?></span>
-                            </li>
-                            <li>
-                                <span>Last Login</span>
-                                <span><small><?php echo $last_login_time."(".$last_login_status.")";?></small></span>
-
-                            </li>
-
-                          </ul>
-                        </div>
-                    </div>
-
-                    <div class="card card-about-me">
-                        <div class="header">
-                            <h2>My Info</h2>
-                        </div>
-                        <div class="body">
-                            <ul>
-                                <li>
-                                    <div class="title">
-                                        <i class="material-icons">email</i>
-                                        Email
-                                    </div>
-                                    <div class="content">
-                                        <? echo $email." ";
-                                           if($verified!=0){
-                                             echo "<span class='label bg-green'>Verified</span>";
-                                           }
-                                           else{
-                                             echo "<span class='label bg-green'>Not Verified</span>";
-                                           }
-                                        ?>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="title">
-                                        <i class="material-icons">phone</i>
-                                        Phone
-                                    </div>
-                                    <div class="content">
-                                        <? echo $phone." ";?><span class="label bg-green">Verified</span>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="title">
-                                        <i class="material-icons">location_city</i>
-                                        Billing Address
-                                    </div>
-                                    <div class="content">
-                                        <?php
-                                        if($address!=""){
-                                          echo $address;
-                                        }
-                                        else{
-                                          echo "No billing address yet";
-                                        }
-                                         ?>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!--Wallet card-->
-                    <div class="col-xs-12 col-sm-3">
-                      <div class="card card-about-me">
-                          <div class="header">
-                              <h2>My Wallet</h2>
-                          </div>
-                          <div class="body">
-                              <ul>
-                                  <li>
-                                      <div class="title">
-                                          <i class="material-icons"> attach_money </i>
-                                          Balance
-                                      </div>
-                                      <div class="content">
-                                          0
-                                      </div>
-                                  </li>
-                                  <li>
-                                      <div class="title">
-                                          <i class="material-icons">account_balance</i>
-                                          Bank Account
-                                      </div>
-                                      <div class="content">
-                                          ***882
-                                      </div>
-                                  </li>
-                                  <li>
-                                      <div class="title">
-                                          <i class="material-icons">credit_card</i>
-                                          Credit Card
-                                      </div>
-                                      <div class="content">
-                                        ***7477
-                                      </div>
-                                  </li>
-                              </ul>
-                          </div>
+                  <div class="card card-about-me">
+                      <div class="header">
+                          <h2>My Wallet</h2>
                       </div>
-                    </div>
+                      <div class="body">
+                          <ul>
+                              <li>
+                                  <div class="title">
+                                      <i class="material-icons"> attach_money </i>
+                                      Balance
+                                  </div>
+                                  <div class="content">
+                                      0
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="title">
+                                      <i class="material-icons">account_balance</i>
+                                      Bank Account
+                                  </div>
+                                  <div class="content">
+                                      ***882
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="title">
+                                      <i class="material-icons">credit_card</i>
+                                      Credit Card
+                                  </div>
+                                  <div class="content">
+                                    ***7477
+                                  </div>
+                              </li>
+                          </ul>
+                      </div>
+                  </div>
                 </div>
 
                 <div class="col-xs-12 col-sm-9">
@@ -471,157 +373,21 @@
                 <div class="col-xs-12 col-sm-9">
                     <div class="card">
                         <div class="body">
-                          <p class="font-bold col-blue-grey">Friend List</p>
-                          <div class="list-unstyled row clearfix">
-                            <div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
-                              <div class="image-area">
-                                  <img src="<?php echo $profile_img; ?>"  width="128" height="128" alt="Profile Image"></img>
-                              </div>
-                            </div>
-                          </div>
+                          <p class="font-bold col-blue-blue">Update Bank Account</p>
+
                         </div>
                     </div>
                 </div>
-                <!--  #change profile-->
+
                 <div class="col-xs-12 col-sm-9">
                     <div class="card">
                         <div class="body">
-                          <p class="font-bold col-blue-grey">Update Profile</p>
-                          <form action="profile" method="POST" class="form-horizontal">
-                            <div class="form-group">
-                              <label for="firstname" class="col-sm-2 control-label">First Name</label>
-                                <div class="col-sm-10">
-                                <div class="form-line">
-                                  <input autocomplete="off" type="text" name="firstname" id="inputfirstname" value="<?php echo $firstname; ?>" class="form-control is-valid" onkeyup="safeName(this)" placeholder="Your first name" autofocus inlength="1" maxlength="255" required/>
-                                </div>
-                                <div id="invalidfirstname" class="invalid-feedback " style="display:none;">
-                                </div>
-                              </div>
-                            </div>
+                          <p class="font-bold col-blue-blue">Update Credit Card</p>
 
-                            <div class="form-group">
-                              <label for="lastname" class="col-sm-2 control-label">Last Name</label>
-                              <div class="col-sm-10">
-                                <div class="form-line">
-                                  <input autocomplete="off" type="text" name="lastname" id="inputlastname" value="<?php echo $lastname; ?>" class="form-control is-valid" onkeyup="safeName(this)" placeholder="Your last name" minlength="1" maxlength="255" required/>
-                                </div>
-                                <div id="invalidlastname" class="invalid-feedback" style="display:none;">
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="email" class="col-sm-2 control-label">Email</label>
-                              <div class="col-sm-10">
-                                <div class="form-line">
-                                  <input autocomplete="off" type="email" name="email" id="inputEmail" class="form-control is-valid" value="<?php echo $email; ?>" placeholder="Your email address" required />
-                                </div>
-                                <div id="invalidemail" class="invalid-feedback" style="display:none;">
-                                Please provide a valid email address
-                                </div>
-                                <div id="invalidemail2" class="invalid-feedback" style="display:none;">
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="phone" class="col-sm-2 control-label">Phone</label>
-                              <div class="col-sm-10">
-                                <div class="form-line">
-                                  <input autocomplete="off" type="phone" min-length="8" max-length="8" name="phone" id="inputPhone" value="<?php echo $phone; ?>" class="form-control is-valid" placeholder="Your phone number" required />
-                                </div>
-                                <div id="invalidphonenumber" class="invalid-feedback" style="">
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="address" class="col-sm-2 control-label">Billing Address</label>
-                              <div class="col-sm-10">
-                                <div class="form-line">
-                                  <input autocomplete="off" type="text" name="address" id="address" class="form-control" value="<?php echo $address;; ?>" placeholder="Your full billing address" minlength="1" maxlength="255" required/>
-                                </div>
-                                <div id="invalidaddress" class="invalid-feedback" style="display:none;">
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="passwordChange" class="col-sm-2 control-label">Password</label>
-                              <div class="col-sm-9">
-                                <div class="form-line">
-                                  <input autofocus type="password" class="form-control" id="passwordChange" name="passwordChange" placeholder="Confirm changes with your Password" required>
-                                </div>
-                                <div id="invalidPasswordChange" class="invalid-feedback" style="display:none;">
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="form-group">
-                              <div class="col-sm-offset-2 col-sm-10">
-                                <button type="submit" id="change_profile_submit" name="change_profile_submit" value="change_profile_submit" class="btn btn-danger" disabled>SUBMIT</button>
-                              </div>
-                            </div>
-
-                          </form>
                         </div>
                     </div>
                 </div>
-                <!--  #change password-->
-                <div class="col-xs-12 col-sm-9">
-                    <div class="card">
-                        <div class="body">
-                          <p class="font-bold col-blue-grey">Change Password</p>
-                          <form action="profile.php" method="POST" class="form-horizontal">
-                              <div class="form-group">
-                                  <label for="OldPassword" class="col-sm-3 control-label">Current Password</label>
-                                  <div class="col-sm-9">
-                                      <div class="form-line">
-                                          <input autofocus type="password" class="form-control" id="OldPassword" name="OldPassword" placeholder="Current Password" required>
-                                      </div>
-                                      <div id="invalidOldPassword" class="invalid-feedback" style="display:none;">
-                                      </div>
-                                  </div>
-                              </div>
-                              <div class="form-group">
-                                  <label for="NewPassword" class="col-sm-3 control-label">New Password</label>
-                                  <div class="col-sm-9">
-                                      <div class="form-line">
-                                          <input type="password" class="form-control" id="NewPassword" onkeyup="validatePass(this.value)" minlength="8" name="NewPassword" placeholder="New Password" required>
-                                      </div>
-                                      <div id="invalidNewPassword" class="invalid-feedback" style="display:none;">
-                                      </div>
-                                  </div>
-                              </div>
-                              <div class="form-group">
-                                  <label for="NewPasswordConfirm" class="col-sm-3 control-label">Confirm New Password</label>
-                                  <div class="col-sm-9">
-                                      <div class="form-line">
-                                          <input type="password" class="form-control" id="NewPasswordConfirm" name="NewPasswordConfirm" onkeyup="checkPass(this)" minlength="8" placeholder="Confirm New Password" required>
-                                      </div>
-                                      <div id="invalidNewPasswordConfirm" class="invalid-feedback" style="display:none;">
-                                      </div>
-                                  </div>
-                              </div>
-                              <div class="form-group">
-                                  <label for="inputGoogleAuthCode" class="col-sm-3 control-label">Google Authenticator Code</label>
-                                  <div class="col-sm-9">
-                                      <div class="form-line">
-                                          <input type="text" class="form-control" id="inputGoogleAuthCode" name="inputGoogleAuthCode" placeholder="6-digit 2 factor authentication code" required>
-                                      </div>
-                                      <div id="invalidGoogleAuthCode" class="invalid-feedback" style="display:none;">
-                                      </div>
-                                  </div>
-                              </div>
-                              <div class="form-group">
-                                  <div class="col-sm-offset-3 col-sm-9">
-                                      <button type="submit" name="change_password_submit" id="change_password_submit" value="change_password_submit" class="btn btn-danger" disabled>SUBMIT</button>
-                                  </div>
-                              </div>
-                          </form>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </section>

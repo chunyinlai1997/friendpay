@@ -142,6 +142,14 @@
     <section class="content">
         <div class="container-fluid">
             <div class="block-header">
+                <?php
+                if(isset($_GET['setup'])){
+                  if($_GET['setup']==True){
+                    echo "<div class='alert alert-success' role='alert'>Well Done! You have activated your acccount.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+                  }
+                }
+
+                ?>
                 <h2><?php
                 $str = "";
                 $time = date("H");
@@ -165,46 +173,35 @@
             </div>
 
             <!-- Widgets -->
-            <div class="row clearfix">
+            <a href="wallet"><div class="row clearfix">
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <div class="info-box bg-pink hover-expand-effect">
-                        <div class="icon">
-                            <i class="material-icons">attach_money</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">FriendPay balance</div>
-                            <div class="number count-to" data-from="0" data-to="<?php echo $amount; ?>" data-speed="15" data-fresh-interval="20"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <a href="fucker">
-                    <div class="demo-color-box bg-teal">
+                    <div class="demo-color-box bg-pink">
                         <div class="color-code"></div>
-                        <div class="color-name">SEND</div>
+                        <div class="color-name">FriendPay balance: <?php echo $amount; ?></div>
                     </div>
-                    </a>
-                </div>
+                </div></a>
 
+                <a href="fucker">
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <a href="fucker">
+                    <div class="demo-color-box bg-amber">
+                        <div class="color-code"></div>
+                        <div class="color-name">PAY</div>
+                    </div>
+                </div></a>
+
+                <a href="fucker"><div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="demo-color-box bg-indigo">
                         <div class="color-code"></div>
                         <div class="color-name">REQUEST</div>
                     </div>
-                    </a>
-                </div>
+                </div></a>
 
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <a href="fucker">
+                <a href="profile"><div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="demo-color-box bg-teal">
-                        <div class="color-name">TEAL</div>
-                        <div class="color-code">#009688</div>
-                        <div class="color-class-name">bg-teal</div>
+                        <div class="color-code"></div>
+                        <div class="color-name">Profile</div>
                     </div>
-                    </a>
-                </div>
+                </div></a>
 
 
             </div>
@@ -214,7 +211,7 @@
                       <div class="card">
                           <div class="header">
                               <h2>
-                                  HOVER ROWS
+                                  Recent History
                                   <small>Add <code>.table-hover</code> to enable a hover state on table rows within a <code>&lt;tbody&gt;</code>.</small>
                               </h2>
                               <ul class="header-dropdown m-r--5">

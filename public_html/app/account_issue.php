@@ -139,20 +139,8 @@
     $qrCodeUrl = $ga->getQRCodeGoogleUrl($auth_email, $google_auth_code," Friend Pay | COMP3334 Project ($auth_email) ");
     $used_two_factor = $result_auth[2];
     if($used_two_factor == "used"){
-      $content = "
-      <div class='row clearfix'>
-      <div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
-      <div class='card'>
-      	<div class='header'>
-      	<h2>Error</h2>
-      	</div>
-      	<div class='body'>
-      	 <h5>For your account safety, please <a href='#'> contact us</a></h5>
-      	</div>
-      </div>
-      </div>
-      </div>
-      ";
+      mysql_query("UPDATE Users SET verified='3', status='inactive', two_factor='not-used'  WHERE id = '$id'");
+      header("Location: dashboard");
     }
     else {
       $content = "

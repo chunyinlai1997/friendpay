@@ -264,13 +264,105 @@ function finalCheckChangePassword(){
 <script src="js/pages/index.js"></script>
 <script src="js/demo.js"></script>
 
-  */
+
   $id = isloggedin();
   $new_pass = clean("Willon97");
   $options = [
       'cost' => 9,
   ];
   $hashed_password = password_hash("$new_pass", PASSWORD_BCRYPT, $options);
-  echo "UPDATE Users SET passsword='$hashed_password' WHERE id = '$id'";
-  mysql_query("UPDATE Users SET passsword='$hashed_password' WHERE id = '$id'");
+
+  */
+  //$id = isloggedin();
+  //$tmp = mysql_query("SELECT Users.verified, Users.status FROM Users WHERE id='$id'")or die(mysql_error());
+  //$getf = mysql_fetch_array($tmp,MYSQL_NUM);
+  //echo $getf[0].$getf[1];
+  //echo "UPDATE Users SET verified='0' WHERE id = '$id'";
+  //mysql_query("UPDATE Users SET verified='0' WHERE id = '$id'");
 ?>
+<div class='form-bottom'>
+  		  <div class='card card-block' id='payform' style='display:block;margin-buttom:20px;'>
+  			<!-- form card cc payment -->
+  			<div class='card card-outline-secondary' style='padding:10px;'>
+  				<div class='card-block'>
+  					<div class='form-group text-center'>
+  						<ul class='list-inline'>
+  							<li class='list-inline-item'><i class='text-muted fa fa-cc-visa fa-2x'></i></li>
+  							<li class='list-inline-item'><i class='fa fa-cc-mastercard fa-2x'></i></li>
+  							<li class='list-inline-item'><i class='fa fa-cc-amex fa-2x'></i></li>
+  							<li class='list-inline-item'><i class='fa fa-cc-discover fa-2x'></i></li>
+  						</ul>
+  					</div>
+  					<hr>
+  						<div class='form-group'>
+  						<label class='col-md-12'>Payment Detail</label>
+  						<input type='text' class='form-control' readonly value='Online Booking Service (Fully refund to consultantion fee)'>
+  						</div>
+  						<div class='form-group'>
+  							<label for='cc_name'>Card Holder's Name</label>
+  							<input type='text' class='form-control' id='cc_name' onkeyup='check_hname(this);'  name='cc_name' title='First and last name' >
+  						</div>
+  						<div id='vcname' class='invalid-feedback' style='display:none;'></div>
+  						<div class='form-group'>
+  							<label>Card Number</label>
+  							<div class='input-group'>
+  								<div class='input-group-addon' id='cardtype' style='dsiplay:none;'></div>
+  								<input type='text' class='form-control' name='cardnum' autocomplete='off' maxlength='20' id='cardnum' onkeyup='CardNumber();' onchange='CardNumber();' title='Credit card number' >
+  							</div>
+  						</div>
+  						<div id='vcnum' class='invalid-feedback' style='display:none;'></div>
+  						<div class='form-group row'>
+  							<label class='col-sm-10'>Card Exp. Date</label>
+  							<div class='col-md-4'>
+  								<select id='exMonth' name='cc_exp_mo' class='form-control' onchange='check_exp();' onkeyup='check_exp();' size='0'>
+  									<option value='1'>01</option>
+  									<option value='2'>02</option>
+  									<option value='3'>03</option>
+  									<option value='4'>04</option>
+  									<option value='5'>05</option>
+  									<option value='6'>06</option>
+  									<option value='7'>07</option>
+  									<option value='8'>08</option>
+  									<option value='9'>09</option>
+  									<option value='10'>10</option>
+  									<option value='11'>11</option>
+  									<option value='12'>12</option>
+  								</select>
+  							</div>
+  							<div class='col-md-4'>
+  								<select id='exYear' name='cc_exp_yr'  class='form-control' onchange='check_exp();' onkeyup='check_exp();'  size='0'>
+  									<option value='2017'>2017</option>
+  									<option value='2018'>2018</option>
+  									<option value='2019'>2019</option>
+  									<option value='2020'>2020</option>
+  									<option value='2021'>2021</option>
+  									<option value='2022'>2022</option>
+  									<option value='2023'>2023</option>
+  									<option value='2024'>2024</option>
+  									<option value='2025'>2025</option>
+  									<option value='2026'>2026</option>
+  									<option value='2027'>2027</option>
+  								</select>
+  							</div>
+  							<div class='col-md-4'>
+  								<input type='text' class='form-control' autocomplete='off' maxlength='3' onkeyup='check_cvc(this);' id='cvc' pattern='\d{3}' title='Three digits at back of your card' placeholder='CVC'>
+  							</div>
+  						</div>
+  						<div id='vdate' class='invalid-feedback' style='display:none;'></div>
+  						<div id='vcvc' class='invalid-feedback' style='display:none;'></div>
+
+  						<div class='row'>
+  							<label class='col-md-12'>Amount</label>
+  						</div>
+  						<div class='form-inline'>
+  							<div class='input-group'>
+  								<div class='input-group-addon'>$</div>
+  								<input type='text' class='form-control text-right' value='50' name='amount' readonly>
+  								<div class='input-group-addon'>HKD</div>
+  							</div>
+  						</div>
+  					</div>
+  					<hr>
+  					<div style='height:30px;'/>
+  				</div>
+  			</div>
