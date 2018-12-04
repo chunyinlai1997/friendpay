@@ -21,8 +21,8 @@
   $status = $row[7];
   $two_factor = $row[8];
   $address = $row[9];
-  $cardnum = decrypt($row[10]);
-  $bankac = decrypt($row[11]);
+  $cardnum = "****".substr(decrypt($row[10]),-4);
+  $bankac = "****".substr(decrypt($row[11]),-6);
   $cardtype = $row[12];
   $bank_name = $row[13];
   $amount = $row[14];
@@ -215,11 +215,14 @@
   	$headers = 'From:noreply@friendpay.com' . "\r\n";
   	mail($to, $subject, $message, $headers);
   }
+
+
 ?>
 <html lang="en">
 <head>
 	<title> Profile | Friend Pay</title>
 	<?php include 'head-info.php'; ?>
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css' rel='stylesheet' />
 </head>
 
 <body class="theme-green">
@@ -441,7 +444,7 @@
                                         Balance
                                     </div>
                                     <div class="content">
-                                        0
+                                        <?php echo $amount." HKD"; ?>
                                     </div>
                                 </li>
                                 <li>
@@ -451,7 +454,8 @@
                                     </div>
                                     <div class="content">
                                       <?php
-                                      if($bankac!=""){
+                                      echo $bank_name." ";
+                                      if($bankac!="****"){
                                         echo $bankac;
                                       }
                                       else{
@@ -467,7 +471,20 @@
                                     </div>
                                     <div class="content">
                                       <?php
-                                      if($cardnum!=""){
+                                      if($cardtype=="visa"){
+                                        echo "<i class='fa fa-cc-visa fa-2x'></i> ";
+                                      }
+                                      else if ($cardtype=="mastercard") {
+                                        echo "<i class='fa fa-cc-mastercard fa-2x'></i> ";
+                                      }
+                                      else if ($cardtype=="amercian_express") {
+                                        echo "<i class='fa fa-cc-amex fa-2x'></i> ";
+                                      }
+                                      else if ($cardtype=="discover") {
+                                        echo "<i class='fa fa-cc-discover fa-2x'></i> ";
+                                      }
+
+                                      if($cardnum!="****"){
                                         echo $cardnum;
                                       }
                                       else{
