@@ -12,6 +12,7 @@
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="css/imagehover.min.css">
   <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel='shortcut icon' href='https://mygreatlakes.org/mglstatic/educate/images/knowledge-center/slider/ways-steps.png' type='image/x-icon' />
 </head>
 
 <body>

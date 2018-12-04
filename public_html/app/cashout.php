@@ -55,6 +55,7 @@
         mysql_query("UPDATE Client SET amount='$newamount' WHERE user_id = '$id'");
         $now = date("Y-m-d H:i:s");
         mysql_query("INSERT INTO Transaction(payer_id,payee_id,amount,date_time,status,remark) VAlUES('$id','$id','$out_amount','$now','success','cashout')");
+        send_email($firstname,$lastname,$email,$out_amount,$bank_ac);
         header("Location: cashout?cashout=success");
       }
       else{
@@ -66,6 +67,30 @@
     }
   }
 
+  function send_email($fname,$lname,$email,$out_amount,$bank_ac){
+  	$to      = $email; // Send email to our user
+  	$subject = ' Top Up -- Transaction Record | Friend Pay'; // Give the email a subject
+    $ipaddress = $_SERVER['REMOTE_ADDR'];
+    $now = date("Y-m-d H:i:s");
+  	$message = "
+  	Dear $fname $lname,
+
+  	You have just cash out $ $out_amount HKD to your bank account XXXXXXXXXX$bank_ac.
+    The transaction was made in $now with the device IP: $ipaddress.
+
+    If it is not you, please contact us immediately to protect your account safety.
+
+    This is a system-generated email.  Please do not reply.
+    If you did not use our service, please ignore this email.
+
+  	Best Regards,
+
+  	Friend Pay Team
+  	";
+
+  	$headers = 'From:noreply@friendpay.com' . "\r\n";
+  	mail($to, $subject, $message, $headers);
+  }
 ?>
 <html lang="en">
 <head>

@@ -6,7 +6,7 @@ echo "
   <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no' />
   <meta name='description' content='Friendpay is a great online payment platform' />
   <meta name='author' content='Willon Web App' />
-  <link rel='shortcut icon' href='./img/favicon.ico' type='image/x-icon' />
+  <link rel='shortcut icon' href='https://mygreatlakes.org/mglstatic/educate/images/knowledge-center/slider/ways-steps.png' type='image/x-icon' />
   <link rel='apple-touch-icon' type='image/x-icon' href='./img/apple-touch-icon-57x57-precomposed.png' />
   <link rel='apple-touch-icon' type='image/x-icon' sizes='72x72' href='./img/apple-touch-icon-72x72-precomposed.png' />
   <link rel='apple-touch-icon' type='image/x-icon' sizes='114x114' href='./img/apple-touch-icon-114x114-precomposed.png' />

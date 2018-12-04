@@ -174,7 +174,7 @@
                                             <th>Type</th>
                                             <th>Payer</th>
                                             <th>Receiver</th>
-                                            <th>Amount</th>
+                                            <th>Amount (HKD)</th>
                                             <th>DateTime</th>
                                             <th>Status</th>
                                         </tr>
@@ -184,20 +184,79 @@
                                             <th>Type</th>
                                             <th>Payer</th>
                                             <th>Receiver</th>
-                                            <th>Amount</th>
+                                            <th>Amount (HKD)</th>
                                             <th>DateTime</th>
                                             <th>Status</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
-                                      <tr>
-                                          <td>Tiger Nixon</td>
-                                          <td>System Architect</td>
-                                          <td>Edinburgh</td>
-                                          <td>61</td>
-                                          <td>2011/04/25</td>
-                                          <td>$320,800</td>
-                                      </tr>
+<!--<tr> <td>Tiger Nixon</td> <td>System Architect</td> <td>Edinburgh</td> <td>61</td> <td>2011/04/25</td> <td>$320,800</td> </tr>-->
+                                      <?php
+                                      $id = isloggedin();
+                                      $sqlf1 = mysql_query("(SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payer_id = '$id') UNION (SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payee_id = '$id') ORDER BY date_time DESC ") or die(mysql_error());
+                                      while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
+                                        $type = $arrayResult[0];
+                                        $payer_id = $arrayResult[1];
+                                        $payee_id = $arrayResult[2];
+                                        $amount = $arrayResult[3];
+                                        $dt = $arrayResult[4];
+                                        $st = $arrayResult[5];
+                                        if($payer_id==$id && $payee_id==$id && $type=="topup"){
+                                          echo "
+                                          <tr>
+                                              <td>TOPUP</td>
+                                              <td>ME</td>
+                                              <td>ME</td>
+                                              <td>$amount</td>
+                                              <td>$dt</td>
+                                              <td>$st</td>
+                                          </tr>
+                                          ";
+                                        }
+                                        else if($payer_id==$id && $payee_id==$id && $type=="cashout"){
+                                          echo "
+                                          <tr>
+                                              <td>CASHOUT</td>
+                                              <td>ME</td>
+                                              <td>ME</td>
+                                              <td>$amount</td>
+                                              <td>$dt</td>
+                                              <td>$st</td>
+                                          </tr>
+                                          ";
+                                        }
+                                        else if($payer_id==$id && $type=="transfer"){
+                                          $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payee_id'");
+                                          $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                          $name = $getfind[0]." ".$getfind[1];
+                                          echo "
+                                          <tr>
+                                              <td>RECEIVED</td>
+                                              <td>ME</td>
+                                              <td><a href='member?id=$payee_id'>$name</a></td>
+                                              <td>$amount</td>
+                                              <td>$dt</td>
+                                              <td>$st</td>
+                                          </tr>
+                                          ";
+                                        }
+                                        else if($payee_id==$id && $type=="transfer"){
+                                          $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payer_id'");
+                                          $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                          $name = $getfind[0]." ".$getfind[1];
+                                          echo "
+                                          <tr>
+                                              <td>PAY</td>
+                                              <td><a href='member?id=$payer_id'>$name</a></td>
+                                              <td>ME</td>
+                                              <td>$amount</td>
+                                              <td>$dt</td>
+                                              <td>$st</td>
+                                          </tr>
+                                          ";
+                                        }
+                                      }
+                                      ?>
                                     </tbody>
                                 </table>
                             </div>

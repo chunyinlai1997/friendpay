@@ -179,7 +179,7 @@
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="demo-color-box bg-pink">
                         <div class="color-code"></div>
-                        <div class="color-name">Balance: <?php echo $amount; ?>HKD</div>
+                        <div class="color-name">Balance: $<?php echo $amount; ?>HKD</div>
                     </div>
                 </div></a>
 

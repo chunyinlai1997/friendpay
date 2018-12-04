@@ -96,7 +96,7 @@
 ?>
 <html lang="en">
 <head>
-	<title> Top Up | Friend Pay</title>
+	<title> Send and Request | Friend Pay</title>
 	<?php include 'head-info.php'; ?>
   <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css' rel='stylesheet' />
   <link href="plugins/sweetalert/sweetalert.css" rel="stylesheet">
@@ -219,115 +219,49 @@
                   <? echo $alt;?>
                 </div>
 
-                <div class="col-xs-12 col-sm-12">
-                    <div class="card">
-                        <div class="body">
-                          <p class="font-bold col-blue-blue">Top Up</p>
-                          <small>You can top up from your credit card</small>
-                          <form action="topup" method="POST" id="topup_form" class="form-horizontal">
+                <div class="col-xs-12 col-sm-9">
+                  <div class="body">
+                    <div class="header">
+                        <h2>
+                            Find People
+                            <small>You can search people by email address or phone number.</small>
                             <div class="form-group">
-                      			<label for="amount" class="col-sm-2 control-label">Amount</label>
-                      			  <div class="col-sm-10">
-                      			  <div class="form-line">
-                      				<input autocomplete="off" type="text" name="amount" id="amount" class="form-control" onkeyup="safeNumber(this)" placeholder="topup amount in HKD" autofocus required/>
-                      			  </div>
-                      			  <div id="invalid_amounts" class="invalid-feedback " style="display:none;">
-                      			  </div>
-                      			</div>
-                      		  </div>
-
-                            <div class='form-group'>
-                              <label for="amount" class="col-sm-2 control-label">Authorization Code</label>
-                      			  <div class="col-sm-10">
-                                <div class="form-line">
-                                <input autofocus type='text' id='inputGoogleAuthCode2' name='code2' minlength='6' maxlength='6' placeholder='Input 6-digit code here' class='form-control' onkeyup="checkcode()" onchange="checkcode()" autofocus required>
-                                </div>
-                                <div id='invalidGoogleAuthCode2' class='invalid-feedback' style='display:none;'>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="form-group">
-                              <div class="col-sm-offset-2 col-sm-10">
-                                <button type="submit" id="topup_submit" name="topup_submit" value="topup_submit" class="btn btn-danger" disabled>SUBMIT</button>
-                              </div>
-                            </div>
-
-                            <div class="form-group"><div class="col-sm-offset-2 col-sm-10"><h6>Using your credit card ends with <?php echo $cardnum; ?>.</h6></div></div>
-                          </form>
-                        </div>
+                            <div class="form-line">
+                              <input id="search" name="search" type="text" class='form-control' placeholder='Search Here' autofocus required>
+                           </div>
+                         </div>
+                        </h2>
                     </div>
+
+                    <div class="row" id="resultfriend">
+
+                    </div>
+                  </div>
                 </div>
 
             </div>
         </div>
     </section>
     <script>
-    var patt1 = new RegExp("^[0-9]{1,5}[.][0-9]{1,2}$");
-    var patt2 = new RegExp("^[0-9]{1,5}$");
-    function safeNumber(amount){
-      if(patt1.test(amount.value)||patt2.test(amount.value)){
-        if(parseFloat(amount.value)<0.01){
-          document.getElementById("amount").classList.add('is-invalid');
-          document.getElementById("amount").classList.remove('is-valid');
-          document.getElementById("invalid_amounts").innerHTML = "The minimum amount is $0.01HKD";
-          document.getElementById("invalid_amounts").style.display = "block";
-          document.getElementById("invalid_amounts").style.color = "red";
-        }
-        else if(parseFloat(amount.value)>5000){
-          document.getElementById("amount").classList.add('is-invalid');
-          document.getElementById("amount").classList.remove('is-valid');
-          document.getElementById("invalid_amounts").innerHTML = "The maximum amount is $5000HKD";
-          document.getElementById("invalid_amounts").style.display = "block";
-          document.getElementById("invalid_amounts").style.color = "red";
-        }
-        else{
-          document.getElementById("amount").classList.add('is-valid');
-          document.getElementById("amount").classList.remove('is-invalid');
-          document.getElementById("invalid_amounts").style.display = "none";
-        }
-      }
-      else{
-        document.getElementById("amount").classList.add('is-invalid');
-        document.getElementById("amount").classList.remove('is-valid');
-        document.getElementById("invalid_amounts").innerHTML = "Please input a valid amount";
-        document.getElementById("invalid_amounts").style.display = "block";
-        document.getElementById("invalid_amounts").style.color = "red";
-      }
-      checkAmountsubmit();
-    }
-
-    var codeP = /^([0-9]{6})$/;
-    function checkcode(){
-      var code  = document.getElementById("inputGoogleAuthCode2").value;
-      var checking = codeP.test( code ) === true;
-      if(checking){
-        document.getElementById("inputGoogleAuthCode2").classList.add('is-valid');
-        document.getElementById("inputGoogleAuthCode2").classList.remove('is-invalid');
-        document.getElementById("invalidGoogleAuthCode2").style.display = "none";
-      }
-      else{
-        document.getElementById("inputGoogleAuthCode2").classList.add('is-invalid');
-        document.getElementById("inputGoogleAuthCode2").classList.remove('is-valid');
-        document.getElementById("invalidGoogleAuthCode2").innerHTML = "Please input a valid code";
-        document.getElementById("invalidGoogleAuthCode2").style.display = "block";
-        document.getElementById("invalidGoogleAuthCode2").style.color = "red";
-      }
-      checkAmountsubmit();
-    }
-
-    function checkAmountsubmit(){
-      var amount =  document.getElementById("amount").classList.contains('is-valid');
-      var code =  document.getElementById("inputGoogleAuthCode2").classList.contains('is-valid');
-      console.log(amount,code);
-      if(code&&amount){
-        document.getElementById("topup_submit").disabled = false;
-      }
-      else{
-        document.getElementById("topup_submit").disabled = true;
-      }
-    }
-
+    $(document).ready(function(){
+      $("#search").keyup(function () {
+        var search = $(this).val();
+        $.ajax({
+          url:"check.php",
+          method:"POST",
+          data:{getUser:search},
+          dataType:"text",
+          success:function(response){
+            if(response!=0){
+              $('#resultfriend').html(response);
+            }
+            else{
+              $('#resultfriend').html("No result...");
+            }
+          },
+        });
+      });
+    });
     </script>
     <script src="plugins/jquery/jquery.min.js"></script>
     <script src="plugins/bootstrap/js/bootstrap.js"></script>

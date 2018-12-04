@@ -3,25 +3,44 @@
   include_once 'token.php';
   include_once 'encrypt_decrypt.php';
 
-  $id = isloggedin();
-  if(isset($_COOKIE['SNID'])){
-    $d_token = sha1($_COOKIE['SNID']);
-    $sql = mysql_query("SELECT Token.authorized, Users.two_factor FROM Token, Users WHERE Token.user_id = Users.id  AND Token.token = '$d_token'");
-    $result = mysql_fetch_array($sql,MYSQL_NUM);
-    $auth = $result[0];
-    $twoactor =  $result[1];
-    if($auth=="YES" && $twoactor="used"){
-      echo "here1";
+  function fuck($s){
+    $find = mysql_query("SELECT Users.profile_img, Client.firstname, Client.lastname, Users.id FROM Users, Client WHERE Client.user_id = Users.id AND (Users.email LIKE '%$s%' OR Client.phone LIKE '$s')  ")or die(mysql_error());
+    $count = 0;
+    $result = "";
+    while($arrayResult = mysql_fetch_array($find,MYSQL_NUM)){
+      $count += 1;
+      $img = $arrayResult[0];
+      $fname	= $arrayResult[1]." ".$arrayResult[2];
+      $ud = $arrayResult[3];
+      $result .= "
+
+      <div class='col-xs-12 col-sm-3'>
+        <div class='card profile-card'>
+          <div class='profile-header'>&nbsp;</div>
+          <div class='profile-body'>
+            <div class='image-area'>
+              <img src='<?php echo $img; ?>'  width='128' height='128' alt='Profile Image' />
+            </div>
+            <div class='content-area'>
+              <h3><?php echo $fname;?></h3>
+              <a href='pay?id=$ud' role='button' class='btn bg-yellow waves-effect m-b-15'>PAY</a>
+              <a href='request?id=$ud' role='button' class='btn bg-blue waves-effect m-b-15'>REQUEST</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      ";
     }
-    else if($auth=="NO" && $twoactor=="not-used"){
-      echo "here2".$auth." ".$twoactor;
+
+    if($count==0){
+      return 0;
     }
     else{
-      echo "here3";
+      return $result;
     }
   }
 
-
+  echo fuck("prologic338@gmail.com");
 
   // decrypt($encrypted, 'wrong password') === null
 

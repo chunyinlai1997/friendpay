@@ -326,11 +326,8 @@
                     <b>Version: </b> 1.0.0
                 </div>
             </div>
-
         </aside>
-
     </section>
-
 
     <section class="content">
         <div class="container-fluid">
@@ -431,7 +428,6 @@
                             </ul>
                         </div>
                     </div>
-
                     <!--Wallet card-->
                     <div class="card card-about-me">
                         <div class="header">
@@ -486,7 +482,6 @@
                             </ul>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="col-xs-12 col-sm-9">
@@ -501,7 +496,7 @@
                           <div class="list-unstyled row clearfix">
                             <?php
                             $id = isloggedin();
-                            $sqlf1 = mysql_query("(SELECT user2 as F FROM Friend WHERE user1 = 8) UNION (SELECT user1 as F FROM Friend WHERE user2 = 8)") or die(mysql_error());
+                            $sqlf1 = mysql_query("(SELECT user2 as F FROM Friend WHERE user1 = '$id') UNION (SELECT user1 as F FROM Friend WHERE user2 = '$id')") or die(mysql_error());
                             while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
                               $sqlf2 = mysql_query("SELECT Users.profile_img, Client.firstname, Client.lastname FROM Users, Client WHERE Users.id = Client.user_id AND Users.id='$arrayResult[0]'") or die(mysql_error());
                               $frd = mysql_fetch_array($sqlf2,MYSQL_NUM);
