@@ -1,6 +1,7 @@
 <?php
   include_once 'config.php';
   include_once 'token.php';
+  include_once 'encrypt_decrypt.php';
 
   if(isloggedin()){
     header('Location:dashboard');
@@ -9,11 +10,11 @@
   if(isset($_POST['submit']) && !empty($_POST['submit'])){
     if(isset($_POST['enc']) && isset($_POST['uid'])){
       $uid = $_POST["uid"];
-      $hash = $_POST["enc"];
+      $hash = decrypt($_POST["enc"]);
 
       $sql2 = mysql_query("SELECT Users.verify_hash, Client.lastname, Client.firstname, Users.email, Users.two_factor, Users.verified FROM Users, Client WHERE Users.id ='$uid' and Users.id = Client.user_id ")or die(mysql_error());
       $result2 = mysql_fetch_array($sql2,MYSQL_NUM);
-      $v_hash =  decrypt($result2[0]);
+      $v_hash =  $result2[0];
       $verified = $result2[5];
       $match  = mysql_num_rows($sql2);
 
@@ -33,6 +34,7 @@
             ];
             $hashed_password = password_hash("$password", PASSWORD_BCRYPT, $options);
             $vcode = 1;
+
             $two_factor = $result2[4];
             if ($two_factor == "used"){
               $vcode = 3;

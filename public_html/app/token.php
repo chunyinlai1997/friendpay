@@ -27,6 +27,26 @@
 			return false;
 		}
 	}
+
+	function authorized(){
+		$id = isloggedin();
+		if(isset($_COOKIE['SNID'])){
+			$d_token = sha1($_COOKIE['SNID']);
+			$sql = mysql_query("SELECT Token.authorized, Users.two_factor FROM Token, Users WHERE Token.user_id = Users.id  AND token = '$d_token'");
+			$result = mysql_fetch_array($sql,MYSQL_NUM);
+			$auth = $result[0];
+			$twoactor =  $result[1];
+			if($auth=="YES" && $twoactor=="used"){
+				return true;
+			}
+			else if($auth=="NO" && $twoactor=="not-used"){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+	}
 	/*
 	function isAuth(){
 		if(isset($_COOKIE['SNID2'])){

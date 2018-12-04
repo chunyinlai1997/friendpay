@@ -1,6 +1,7 @@
 <?php
 	include_once 'config.php';
 	include_once 'token.php';
+	include_once 'encrypt_decrypt.php';
 
 	if(isloggedin()){
     header('Location:dashboard');
@@ -60,7 +61,7 @@
 		      $lastname = $getf[1];
 					$v_hash = md5(rand(0,1000));
 			    $join = date("Y-m-d H:i:s");
-			  	mysql_query("UPDATE Users SET verified=4, join_date = '$join', verify_hash = '$v_hash'  WHERE email='$email' ");
+			  	mysql_query("UPDATE Users SET verified=4, status='inactive', join_date = '$join', verify_hash = '$v_hash'  WHERE email='$email' ");
 		      send_email($firstname,$lastname,$email,$v_hash);
 					header("Location:sign-in?ac=LIMIT");
 				}

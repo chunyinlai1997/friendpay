@@ -7,18 +7,19 @@
 	$flag="Verification Fail";
 	if(isset($_GET['v']) && !empty($_GET['v']) AND isset($_GET['e']) && !empty($_GET['e']) AND isset($_GET['h']) && !empty($_GET['h'])){
 		if($_GET['v']=="activate"){
-			$email = mysql_escape_string($_GET['e']);
 			$hash = decrypt(mysql_escape_string($_GET['h']));
-			$sql = mysql_query("SELECT id, email, verified, verify_hash FROM Users WHERE email='$email' AND verify_hash='$hash'") or die(mysql_error());
+			$email = mysql_escape_string($_GET['e']);
+			$sql = mysql_query("SELECT id, email, verified, verify_hash FROM Users WHERE email='$email' AND verify_hash='$hash' ") or die(mysql_error());
 			$row = mysql_fetch_array($sql,MYSQL_NUM);
 			$match  = mysql_num_rows($sql);
+
       $tryid = $row[0];
 
 			if($match==0 && $email == $row[1]){
 				$msg="This link has been activated.";
 			}
 			else if($match==0 && $email != $row[1]){
-				$msg="There is a verification problem, please <a href='#'>contact us</a>.";
+				$msg= "There is a verification problem, please <a href='#'>contact us</a>.";
 			}
 			else if($match==1){
 				$sql2 = mysql_query("SELECT HOUR(TIMEDIFF(join_date, now())) FROM Users WHERE id = '$tryid' ");

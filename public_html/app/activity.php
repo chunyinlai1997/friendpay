@@ -9,7 +9,9 @@
   if(!isVerified() || !isActive()){
     header("Location:account_issue");
   }
-
+  if(!authorized()){
+    header("Location:authorize");
+  }
 
   $id = getUserId();
   $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.create_date, Client.phone, Users.verified, Users.profile_img, Users.status, Users.two_factor, Client.billing_address FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());

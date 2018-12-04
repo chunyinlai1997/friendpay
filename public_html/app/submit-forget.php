@@ -1,6 +1,7 @@
 <?php
   include_once 'config.php';
   include_once 'token.php';
+  include_once 'encrypt_decrypt.php';
 
   if(isloggedin()){
     header('Location:dashboard');

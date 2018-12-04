@@ -84,14 +84,16 @@
     $id = isloggedin();
     if(!empty($_POST['code1'])){
       require_once 'googleLib/GoogleAuthenticator.php';
-      $sql_auth = mysql_query("SELECT Users.google_auth_code, Users.email, Users.two_factor FROM Users WHERE Users.id='$id'")or die(mysql_error());
-      $result_auth = mysql_fetch_array($sql_auth,MYSQL_NUM);
-      $google_auth_code = decrypt($result_auth[0]);
-      $ga = new GoogleAuthenticator();
+      $sql_auth0 = mysql_query("SELECT Users.google_auth_code, Users.email, Users.two_factor FROM Users WHERE Users.id='$id'")or die(mysql_error());
+      $result_auth0 = mysql_fetch_array($sql_auth0,MYSQL_NUM);
+      $google_auth_code0 = decrypt($result_auth0[0]);
+      $ga1 = new GoogleAuthenticator();
       $code = $_POST['code1'];
-      $checkResult = $ga->verifyCode($google_auth_code, $code, 2);
+      $checkResult = $ga1 ->verifyCode($google_auth_code0, $code, 2);
       if($checkResult){
         mysql_query("UPDATE Users SET verified = 3, status = 'active', two_factor='used' WHERE id='$id'");
+        $d_token = sha1($_COOKIE['SNID']);
+        mysql_query("UPDATE Token SET authorized='Yes' WHERE token='$d_token'");
         header("Location:dashboard?setup=True");
       }
       else{
@@ -115,6 +117,8 @@
       $checkResult = $ga->verifyCode($google_auth_code, $code, 2);
       if($checkResult){
         mysql_query("UPDATE Users SET verified = 3, status = 'active', two_factor='used' WHERE id='$id'");
+        $d_token = sha1($_COOKIE['SNID']);
+        mysql_query("UPDATE Token SET authorized='Yes' WHERE token='$d_token'");
         header("Location:dashboard?setup=True");
       }
       else{
@@ -204,6 +208,14 @@
         ".$alt4."
       	<h5>Your account is inactive. Please activate your acount again.</h5>
         <form action='account_issue' method='post'>
+        <div style='' class='media'>
+         <p>Get Google Authenticator on your phone</p>
+         <a href='https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8' target='_blank'><img class='media-object' src='images/iphone.png' width='220' height='64'/></a>
+         <a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en' target='_blank'><img class='media-object' src='images/android.png' width='220' height='64' /></a>
+        </div>
+        <h6>Scan the QR code below in Google Authenticator app.</h6>
+        <img src='$qrCodeUrl' />
+        <p>Alternatively, you can enter your secret key to Google Authenticator app: <strong>$google_auth_code</strong> [Warning: do not release it to third person] </p>
         <div class='form-group'>
           <div class='input-group'>
           Input 6-digit authentication code in Google Authenticator app:

@@ -1,7 +1,7 @@
 <?php
   include_once 'config.php';
   include_once 'token.php';
-
+  include_once 'encrypt_decrypt.php';
   if(isloggedin()){
     header('Location:dashboard');
   }
@@ -27,7 +27,7 @@
 	if(isset($_GET['v']) && !empty($_GET['v']) AND isset($_GET['e']) && !empty($_GET['e']) AND isset($_GET['h']) && !empty($_GET['h'])){
 		if($_GET['v']=="reset"){
 			$email = mysql_escape_string($_GET['e']);
-			$hash = mysql_escape_string($_GET['h']);
+			$hash = decrypt(mysql_escape_string($_GET['h']));
 			$sql = mysql_query("SELECT id, email, verified, verify_hash, password FROM Users WHERE email='$email' AND verify_hash='$hash'") or die(mysql_error());
 			$row = mysql_fetch_array($sql,MYSQL_NUM);
 
@@ -36,13 +36,13 @@
         if($row[3]==$hash){
           $target = $row[3];
           $uid = $row[0];
-
+          $tmp = $_GET['h'];
 					$msg="
             <form action='submit-reset' method='POST'>
             	<div class='form-group'>
             	  <label>Password</label>
                 <input type='hidden' name='uid' value='$row[0]' id='uid' />
-                <input type='hidden' name='enc' value='$hash' id='enc' />
+                <input type='hidden' name='enc' value='$tmp' id='enc' />
                 <input autocomplete='off' type='password' name='password1' class='form-control' id='password1' onkeyup='validatePass(this.value)' placeholder='Your password' minlength='8' maxlength='24' required autofocus />
             	  <div id='invalidPassword1' class='invalid-feedback' style='display:none;'></div>
             	</div>
@@ -64,7 +64,7 @@
 				}
       }
 			else{
-        $msg = "You are not applicable to reset password, please go to <a href='forget-password'>Forget Password</a>.";
+        $msg = "You are not applicable to reset password, please go to <a href='forgot-password'>Forget Password</a>.";
 			}
 		}
 		else{

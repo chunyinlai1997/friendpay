@@ -9,6 +9,19 @@ if(isset($_POST["checkemail"])){
 	echo mysql_num_rows($sql2);
 }
 
+if(isset($_POST["checkbalance"])){
+	$id = isloggedin();
+	$amount = clean($_POST["checkbalance"]);
+	$sql2 = mysql_query("SELECT amount FROM Client WHERE user_id ='$id'") or die(mysql_error());
+	$result = mysql_fetch_array($sql2,MYSQL_NUM);
+	if(floatval($result[0]) < floatval($amount) ){
+		echo 0;
+	}
+	else{
+		echo 1;
+	}
+}
+
 if(isset($_POST["checkphone"])){
 	$phone = clean($_POST["checkphone"]);
 	$sql2 = mysql_query("SELECT * FROM Client WHERE phone ='$phone'") or die(mysql_error());

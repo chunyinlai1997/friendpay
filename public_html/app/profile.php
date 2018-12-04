@@ -7,6 +7,7 @@
     header("Location:sign-in?need_login=True");
   }
 
+
   $id = getUserId();
   $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.create_date, Client.phone, Users.verified, Users.profile_img, Users.status, Users.two_factor, Client.billing_address, Client.credit_card_number, Client.bank_account_number, Client.credit_card_type, Client.bank_name, Client.amount FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
   $row = mysql_fetch_array($sql,MYSQL_NUM);
@@ -644,7 +645,7 @@
                                   <label for="inputGoogleAuthCode" class="col-sm-3 control-label">Google Authenticator Code</label>
                                   <div class="col-sm-9">
                                       <div class="form-line">
-                                          <input type="text" class="form-control" id="inputGoogleAuthCode" name="inputGoogleAuthCode" placeholder="6-digit 2 factor authentication code" required>
+                                          <input type="text" class="form-control" id="inputGoogleAuthCode" name="inputGoogleAuthCode" placeholder="6-digit 2 factor authentication code" onkeyup="checkcode()" onchange="checkcode()" required>
                                       </div>
                                       <div id="invalidGoogleAuthCode" class="invalid-feedback" style="display:none;">
                                       </div>
@@ -704,24 +705,6 @@
             finalCheckChangePassword();
           },
         });
-      });
-
-      $('#inputGoogleAuthCode').change(function(){
-        var code = $(this).val().length;
-        var num = $(this).val();
-        if(code==6&&checkNumber(num)){
-          $('#invalidGoogleAuthCode').css("color","green");
-          $('#invalidGoogleAuthCode').css("display", "block");
-          $('#invalidGoogleAuthCode').html("");
-          $('#inputGoogleAuthCode').removeClass( "is-invalid" ).addClass( "is-valid" );
-        }
-        else{
-          $('#invalidGoogleAuthCode').css("color","red");
-          $('#invalidGoogleAuthCode').css("display", "block");
-          $('#invalidGoogleAuthCode').html("Please input 6-digit code!");
-          $('#inputGoogleAuthCode').removeClass( "is-valid" ).addClass( "is-invalid" );
-        }
-        finalCheckChangePassword();
       });
 
       $("#passwordChange").change(function () {
@@ -969,6 +952,25 @@
         document.getElementById("invalidNewPasswordConfirm").style.display = "block";
         document.getElementById("invalidNewPasswordConfirm").innerHTML = "Password match";
         document.getElementById("invalidNewPasswordConfirm").style.color = "green";
+      }
+      finalCheckChangePassword();
+    }
+
+    var codeP = /^([0-9]{6})$/;
+    function checkcode(){
+      var code  = document.getElementById("inputGoogleAuthCode").value;
+      var checking = codeP.test( code ) === true;
+      if(checking){
+        document.getElementById("inputGoogleAuthCode").classList.add('is-valid');
+        document.getElementById("inputGoogleAuthCode").classList.remove('is-invalid');
+        document.getElementById("invalidGoogleAuthCode").style.display = "none";
+      }
+      else{
+        document.getElementById("inputGoogleAuthCode").classList.add('is-invalid');
+        document.getElementById("inputGoogleAuthCode").classList.remove('is-valid');
+        document.getElementById("invalidGoogleAuthCode").innerHTML = "Please input a valid code";
+        document.getElementById("invalidGoogleAuthCode").style.display = "block";
+        document.getElementById("invalidGoogleAuthCode").style.color = "red";
       }
       finalCheckChangePassword();
     }

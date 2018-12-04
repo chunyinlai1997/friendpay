@@ -3,6 +3,24 @@
   include_once 'token.php';
   include_once 'encrypt_decrypt.php';
 
+  $id = isloggedin();
+  if(isset($_COOKIE['SNID'])){
+    $d_token = sha1($_COOKIE['SNID']);
+    $sql = mysql_query("SELECT Token.authorized, Users.two_factor FROM Token, Users WHERE Token.user_id = Users.id  AND Token.token = '$d_token'");
+    $result = mysql_fetch_array($sql,MYSQL_NUM);
+    $auth = $result[0];
+    $twoactor =  $result[1];
+    if($auth=="YES" && $twoactor="used"){
+      echo "here1";
+    }
+    else if($auth=="NO" && $twoactor=="not-used"){
+      echo "here2".$auth." ".$twoactor;
+    }
+    else{
+      echo "here3";
+    }
+  }
+
 
 
   // decrypt($encrypted, 'wrong password') === null
@@ -278,7 +296,7 @@ function finalCheckChangePassword(){
   //echo $getf[0].$getf[1];
   //echo "UPDATE Users SET verified='0' WHERE id = '$id'";
   //mysql_query("UPDATE Users SET verified='0' WHERE id = '$id'");
-
+/*
   $id = isloggedin();
   $sqlf1 = mysql_query("(SELECT user2 as F FROM Friend WHERE user1 = 8) UNION (SELECT user1 as F FROM Friend WHERE user2 = 8)") or die(mysql_error());
   while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
@@ -286,7 +304,7 @@ function finalCheckChangePassword(){
     $frd = mysql_fetch_array($sqlf2,MYSQL_NUM);
     echo $frd[0];
   }
-  /*
+
   echo "
   <div class='col-lg-2 col-md-3 col-sm-4 col-xs-6'>
     <div class='image-area'>
