@@ -183,7 +183,7 @@
                     </div>
                 </div></a>
 
-                <a href="fucker">
+                <a href="send_request">
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="demo-color-box bg-amber">
                         <div class="color-code"></div>
@@ -191,7 +191,7 @@
                     </div>
                 </div></a>
 
-                <a href="fucker"><div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a href="send_request"><div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="demo-color-box bg-indigo">
                         <div class="color-code"></div>
                         <div class="color-name">REQUEST</div>
@@ -209,138 +209,130 @@
             </div>
 
               <div class="row clearfix">
-                  <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                      <div class="card">
-                          <div class="header">
-                              <h2>
-                                  Recent History
-                                  <small>Add <code>.table-hover</code> to enable a hover state on table rows within a <code>&lt;tbody&gt;</code>.</small>
-                              </h2>
-                              <ul class="header-dropdown m-r--5">
-                                  <li class="dropdown">
-                                      <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                          <i class="material-icons">more_vert</i>
-                                      </a>
-                                      <ul class="dropdown-menu pull-right">
-                                          <li><a href="javascript:void(0);">Action</a></li>
-                                          <li><a href="javascript:void(0);">Another action</a></li>
-                                          <li><a href="javascript:void(0);">Something else here</a></li>
-                                      </ul>
-                                  </li>
-                              </ul>
-                          </div>
-                          <div class="body table-responsive">
-                              <table class="table table-hover">
-                                  <thead>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>
+                                Recent History
+                            </h2>
+                        </div>
+                        <div class="body table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date Time</th>
+                                        <th>Transaction</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                  <?php
+                                  $id = isloggedin();
+                                  $sqlf1 = mysql_query("(SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payer_id = '$id' ) UNION (SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payee_id = '$id') ORDER BY date_time DESC LIMIT 10 ") or die(mysql_error());
+                                  $count = 0;
+                                  $result = "";
+                                  while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
+                                    $count = $count + 1 ;
+                                    $type = $arrayResult[0];
+                                    $payer_id = $arrayResult[1];
+                                    $payee_id = $arrayResult[2];
+                                    $amount = $arrayResult[3];
+                                    $dt = $arrayResult[4];
+                                    $st = $arrayResult[5];
+
+                                    if($payer_id==$id && $type=="transfer"){
+                                      $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payee_id'");
+                                      $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                      $name = $getfind[0];
+                                      $result .= "
                                       <tr>
-                                          <th>#</th>
-                                          <th>FIRST NAME</th>
-                                          <th>LAST NAME</th>
-                                          <th>USERNAME</th>
+                                          <th scope='row'>$dt</th>
+                                          <td>You have transfered $$amount HKD to $name. <span class='label bg-green'>$st</span></td>
                                       </tr>
-                                  </thead>
-                                  <tbody>
+                                      ";
+                                    }
+                                    else if($payee_id==$id && $type=="transfer"){
+                                      $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payer_id'");
+                                      $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                      $name = $getfind[0]." ".$getfind[1];
+                                      $result .= "
                                       <tr>
-                                          <th scope="row">1</th>
-                                          <td>Mark</td>
-                                          <td>Otto</td>
-                                          <td>@mdo</td>
+                                          <th scope='row'>$dt</th>
+                                          <td>$name havs transfered $$amount HKD to you.  <span class='label bg-green'>$st</span></td>
                                       </tr>
+                                      ";
+                                    }
+                                  }
+
+                                  echo $result;
+                                  ?>
+                                </tbody>
+                            </table>
+                            <a href="activity"><button type="button" class="btn btn-warning waves-effect">More</button></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>
+                                Pending Request
+                            </h2>
+                        </div>
+                        <div class="body table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date Time</th>
+                                        <th>Transaction</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                  <?php
+                                  $id = isloggedin();
+                                  $sqlf1 = mysql_query("(SELECT remark, payer_id, payee_id, amount, date_time, status FROM Request WHERE payer_id = '$id' ) UNION (SELECT remark, payer_id, payee_id, amount, date_time, status FROM Request WHERE payee_id = '$id') ORDER BY date_time DESC LIMIT 10 ") or die(mysql_error());
+                                  $count = 0;
+                                  $result = "";
+                                  while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
+                                    $count = $count + 1 ;
+                                    $type = $arrayResult[0];
+                                    $payer_id = $arrayResult[1];
+                                    $payee_id = $arrayResult[2];
+                                    $amount = $arrayResult[3];
+                                    $dt = $arrayResult[4];
+                                    $st = $arrayResult[5];
+
+                                    if($payer_id==$id && $type=="transfer_request"){
+                                      $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payee_id'");
+                                      $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                      $name = $getfind[0];
+                                      $result .= "
                                       <tr>
-                                          <th scope="row">2</th>
-                                          <td>Jacob</td>
-                                          <td>Thornton</td>
-                                          <td>@fat</td>
+                                          <th scope='row'>$dt</th>
+                                          <td>$name have request for $$amount HKD from you. <span class='label bg-orange'>$st</span></td>
                                       </tr>
+                                      ";
+                                    }
+                                    else if($payee_id==$id && $type=="transfer_request"){
+                                      $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payer_id'");
+                                      $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                      $name = $getfind[0]." ".$getfind[1];
+                                      $result .= "
                                       <tr>
-                                          <th scope="row">3</th>
-                                          <td>Larry</td>
-                                          <td>the Bird</td>
-                                          <td>@twitter</td>
+                                          <th scope='row'>$dt</th>
+                                          <td>$You have request for $amount from $name.  <span class='label bg-orange'>$st</span></td>
                                       </tr>
-                                      <tr>
-                                          <th scope="row">4</th>
-                                          <td>Larry</td>
-                                          <td>Jellybean</td>
-                                          <td>@lajelly</td>
-                                      </tr>
-                                      <tr>
-                                          <th scope="row">5</th>
-                                          <td>Larry</td>
-                                          <td>Kikat</td>
-                                          <td>@lakitkat</td>
-                                      </tr>
-                                  </tbody>
-                              </table>
-                          </div>
-                      </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                      <div class="card">
-                          <div class="header">
-                              <h2>
-                                  Recent History
-                                  <small>Add <code>.table-hover</code> to enable a hover state on table rows within a <code>&lt;tbody&gt;</code>.</small>
-                              </h2>
-                              <ul class="header-dropdown m-r--5">
-                                  <li class="dropdown">
-                                      <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                          <i class="material-icons">more_vert</i>
-                                      </a>
-                                      <ul class="dropdown-menu pull-right">
-                                          <li><a href="javascript:void(0);">Action</a></li>
-                                          <li><a href="javascript:void(0);">Another action</a></li>
-                                          <li><a href="javascript:void(0);">Something else here</a></li>
-                                      </ul>
-                                  </li>
-                              </ul>
-                          </div>
-                          <div class="body table-responsive">
-                              <table class="table table-hover">
-                                  <thead>
-                                      <tr>
-                                          <th>#</th>
-                                          <th>FIRST NAME</th>
-                                          <th>LAST NAME</th>
-                                          <th>USERNAME</th>
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                      <tr>
-                                          <th scope="row">1</th>
-                                          <td>Mark</td>
-                                          <td>Otto</td>
-                                          <td>@mdo</td>
-                                      </tr>
-                                      <tr>
-                                          <th scope="row">2</th>
-                                          <td>Jacob</td>
-                                          <td>Thornton</td>
-                                          <td>@fat</td>
-                                      </tr>
-                                      <tr>
-                                          <th scope="row">3</th>
-                                          <td>Larry</td>
-                                          <td>the Bird</td>
-                                          <td>@twitter</td>
-                                      </tr>
-                                      <tr>
-                                          <th scope="row">4</th>
-                                          <td>Larry</td>
-                                          <td>Jellybean</td>
-                                          <td>@lajelly</td>
-                                      </tr>
-                                      <tr>
-                                          <th scope="row">5</th>
-                                          <td>Larry</td>
-                                          <td>Kikat</td>
-                                          <td>@lakitkat</td>
-                                      </tr>
-                                  </tbody>
-                              </table>
-                          </div>
-                      </div>
-                  </div>
+                                      ";
+                                    }
+                                  }
+
+                                  echo $result;
+                                  ?>
+                                </tbody>
+                            </table>
+                            <a href="#"><button type="button" class="btn btn-warning waves-effect">More</button></a>
+                        </div>
+                    </div>
+                </div>
               </div>
 
 

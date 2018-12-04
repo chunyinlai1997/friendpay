@@ -13,6 +13,26 @@
     header("Location:authorize");
   }
 
+  $fid = "";
+  $friend_profileimg = "";
+  $friend_name = "";
+  if(!empty(isset($_GET["id"]))){
+     $fid = $_GET["id"];
+     $findf = mysql_query("SELECT COUNT(*) FROM Users WHERE id = '$fid' ") or die(mysql_error());
+     $findResult = mysql_fetch_array($findf,MYSQL_NUM);
+     if($findResult[0]==0){
+       header("Location:dashboard");
+     }
+     $getf = mysql_query("SELECT Users.profile_img, Client.firstname, Client.lastname FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$fid' ") or die(mysql_error());
+     $friendResult = mysql_fetch_array($getf,MYSQL_NUM);
+     $friend_profileimg = $friendResult[0];
+     $friend_name = $friendResult[1]." ".$friendResult[2];
+     $friend_firstname = $friendResult[1];
+  }
+ else{
+    header("Location:dashboard");
+ }
+
   $id = getUserId();
   $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.create_date, Client.phone, Users.verified, Users.profile_img, Client.credit_card_number, Client.bank_account_number, Client.credit_card_type, Client.bank_name, Client.amount FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
   $row = mysql_fetch_array($sql,MYSQL_NUM);
@@ -23,27 +43,14 @@
   $phone = $row[4];
   $verified = $row[5];
   $profile_img = $row[6];
-  $cardtype = $row[9];
-  $cardnum = $row[7];
-  $amount = $row[11];
-  if($cardnum==""){
-    header("Location:wallet?need=cc");
+  $bank_ac = $row[8];
+  if($bank_ac==""){
+    header("Location:wallet?need=bank");
   }
-  $cardnum = substr(decrypt($row[7]),-4);
   $alt = "";
   $alt2 = "";
 
-  if(isset($_GET["topup"])&&$_GET["topup"]=="success"){
-    $get = mysql_query("SELECT amount FROM Transaction WHERE payee_id='$id' AND payer_id='$id' AND remark='topup' ORDER BY tid DESC LIMIT 1 ")or die(mysql_error());
-    $geta =  mysql_fetch_array($get,MYSQL_NUM);
-    $print_amount = $geta[0];
-    $alt = "<div class='alert alert-success' role='alert'>Transaction completed, you have top up $".$print_amount." HKD to your FriendPay account.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
-  }
-  else if(isset($_GET["balance"])&&$_GET["balance"]=="fail"){
-    $alt = "<div class='alert alert-danger' role='alert'>You do not have enough money for transaction, please top up first.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
-  }
-
-  if(isset($_POST["topup_submit"])){
+  if(isset($_POST["transfer_submit"])){
     $id = isloggedin();
     if(!empty($_POST['code2'])){
       require_once 'googleLib/GoogleAuthenticator.php';
@@ -54,13 +61,22 @@
       $code = $_POST['code2'];
       $checkResult = $ga->verifyCode($google_auth_code, $code, 2);
       if($checkResult){
-        $top_amount = floatval($_POST["amount"]);
-        $newamount = $top_amount + $amount;
-        mysql_query("UPDATE Client SET amount='$newamount' WHERE user_id = '$id'");
+        $t_amount = floatval($_POST["amount"]);
+        $fid = $_POST["fid"];
         $now = date("Y-m-d H:i:s");
-        mysql_query("INSERT INTO Transaction(payer_id,payee_id,amount,date_time,status,remark) VAlUES('$id','$id','$top_amount','$now','success','topup')");
-        send_email($firstname,$lastname,$email,$top_amount,$cardnum);
-        header("Location: topup?topup=success");
+        mysql_query("INSERT INTO Request(payer_id,payee_id,amount,date_time,status,remark) VAlUES('$fid','$id','$t_amount','$now','requested','transfer_request')");
+        $get_rid = mysql_query("SELECT id FROM Request WHERE payer_id='$fid' AND payee_id='$id' AND date_time='$now' AND remark = 'transfer_request' ")or die(mysql_error());
+        $result_rid = mysql_fetch_array($get_rid,MYSQL_NUM);
+        $rid = encrypt($result_rid[0]);
+        send_email($firstname,$lastname,$email,$t_amount,$friend_name);
+        $sentofd = mysql_query("SELECT Users.email, Client.firstname, Client.lastname FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$fid' ");
+        $result_sentofd  = mysql_fetch_array($sentofd,MYSQL_NUM);
+        $refirstname = $result_sentofd[1];
+        $relastname =  $result_sentofd[2];
+        $reemail = $result_sentofd[0];
+        $sender = $firstname." ".$lastname;
+        send_email2($refirstname,$relastname,$reemail,$t_amount,$sender);
+        header("Location:success?request=$rid");
       }
       else{
         $alt = "<div class='alert alert-danger' role='alert'>Wrong code! Please try again.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
@@ -71,16 +87,40 @@
     }
   }
 
-  function send_email($fname,$lname,$email,$top_amount,$cardnum){
+  function send_email($fname,$lname,$email,$t_amount,$friend_name){
   	$to      = $email; // Send email to our user
-  	$subject = ' Top Up -- Transaction Record | Friend Pay'; // Give the email a subject
+  	$subject = 'Request Made -- Transaction Record | Friend Pay'; // Give the email a subject
     $ipaddress = $_SERVER['REMOTE_ADDR'];
     $now = date("Y-m-d H:i:s");
   	$message = "
   	Dear $fname $lname,
 
-  	You have just top up $ $top_amount HKD to your account with the credit card ends with $cardnum.
-    The transaction was made in $now with the device IP: $ipaddress.
+  	You have requested $friend_name to transfer $ $t_amount HKD to you.
+    The request was made in $now with the device IP: $ipaddress.
+
+    If it is not you, please contact us immediately to protect your account safety.
+
+    This is a system-generated email.  Please do not reply.
+    If you did not use our service, please ignore this email.
+
+  	Best Regards,
+
+  	Friend Pay Team
+  	";
+
+  	$headers = 'From:noreply@friendpay.com' . "\r\n";
+  	mail($to, $subject, $message, $headers);
+  }
+
+  function send_email2($fname,$lname,$email,$t_amount,$sender){
+  	$to      = $email; // Send email to our user
+  	$subject = ' Request Received -- Transaction Record | Friend Pay'; // Give the email a subject
+    $now = date("Y-m-d H:i:s");
+  	$message = "
+  	Dear $fname $lname,
+
+  	You have recevied a payment request of $ $t_amount HKD from $sender.
+    The transaction was made in $now.
 
     If it is not you, please contact us immediately to protect your account safety.
 
@@ -99,7 +139,7 @@
 ?>
 <html lang="en">
 <head>
-	<title> Top Up | Friend Pay</title>
+	<title> Request | Friend Pay</title>
 	<?php include 'head-info.php'; ?>
   <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css' rel='stylesheet' />
   <link href="plugins/sweetalert/sweetalert.css" rel="stylesheet">
@@ -225,14 +265,16 @@
                 <div class="col-xs-12 col-sm-12">
                     <div class="card">
                         <div class="body">
-                          <p class="font-bold col-blue-blue">Top Up</p>
-                          <small>You can top up from your credit card</small>
-                          <form action="topup" method="POST" id="topup_form" class="form-horizontal">
+                          <form action="request" method="POST" id="pay_form" class="form-horizontal">
+                            <div class='image-area'>
+                  						<img src='<?php echo $friend_profileimg;?>'  width='120' height='120' style="display: block; margin-left: auto; margin-right: auto; " alt='Profile Image' />
+                  					</div>
+                            <h2 style="text-align:center;">Request <?php echo $friend_name;?> to pay</h2>
                             <div class="form-group">
                       			<label for="amount" class="col-sm-2 control-label">Amount</label>
                       			  <div class="col-sm-10">
                       			  <div class="form-line">
-                      				<input autocomplete="off" type="text" name="amount" id="amount" class="form-control" onkeyup="safeNumber(this)" placeholder="topup amount in HKD" autofocus required/>
+                      				<input autocomplete="off" type="text" name="amount" id="amount" class="form-control" onkeyup="safeNumber(this)" placeholder="transfer amount in HKD" autofocus required/>
                       			  </div>
                       			  <div id="invalid_amounts" class="invalid-feedback " style="display:none;">
                       			  </div>
@@ -243,6 +285,8 @@
                               <label for="amount" class="col-sm-2 control-label">Authorization Code</label>
                       			  <div class="col-sm-10">
                                 <div class="form-line">
+                                <input type="hidden" value="<?php echo $fid; ?>" id="fid" name="fid"/>
+                                <input type="hidden" value="<?php echo $friend_name; ?>" id="friend_name" name="friend_name"/>
                                 <input autofocus type='text' id='inputGoogleAuthCode2' name='code2' minlength='6' maxlength='6' placeholder='Input 6-digit code here' class='form-control' onkeyup="checkcode()" onchange="checkcode()" autofocus required>
                                 </div>
                                 <div id='invalidGoogleAuthCode2' class='invalid-feedback' style='display:none;'>
@@ -252,11 +296,9 @@
 
                             <div class="form-group">
                               <div class="col-sm-offset-2 col-sm-10">
-                                <button type="submit" id="topup_submit" name="topup_submit" value="topup_submit" class="btn btn-danger" disabled>SUBMIT</button>
+                                <button type="submit" id="transfer_submit" name="transfer_submit" value="transfer_submit" class="btn btn-danger" disabled>SUBMIT</button>
                               </div>
                             </div>
-
-                            <div class="form-group"><div class="col-sm-offset-2 col-sm-10"><h6>Using your credit card ends with <?php echo $cardnum; ?>.</h6></div></div>
                           </form>
                         </div>
                     </div>
@@ -324,10 +366,10 @@
       var code =  document.getElementById("inputGoogleAuthCode2").classList.contains('is-valid');
       console.log(amount,code);
       if(code&&amount){
-        document.getElementById("topup_submit").disabled = false;
+        document.getElementById("transfer_submit").disabled = false;
       }
       else{
-        document.getElementById("topup_submit").disabled = true;
+        document.getElementById("transfer_submit").disabled = true;
       }
     }
 

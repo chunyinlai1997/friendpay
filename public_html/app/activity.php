@@ -171,21 +171,21 @@
                                   <!--js-basic-example-->
                                     <thead>
                                         <tr>
+                                            <th>DateTime</th>
                                             <th>Type</th>
                                             <th>Payer</th>
                                             <th>Receiver</th>
                                             <th>Amount (HKD)</th>
-                                            <th>DateTime</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
+                                            <th>DateTime</th>
                                             <th>Type</th>
                                             <th>Payer</th>
                                             <th>Receiver</th>
                                             <th>Amount (HKD)</th>
-                                            <th>DateTime</th>
                                             <th>Status</th>
                                         </tr>
                                     </tfoot>
@@ -204,11 +204,11 @@
                                         if($payer_id==$id && $payee_id==$id && $type=="topup"){
                                           echo "
                                           <tr>
+                                              <td>$dt</td>
                                               <td>TOPUP</td>
                                               <td>ME</td>
                                               <td>ME</td>
                                               <td>$amount</td>
-                                              <td>$dt</td>
                                               <td>$st</td>
                                           </tr>
                                           ";
@@ -216,11 +216,11 @@
                                         else if($payer_id==$id && $payee_id==$id && $type=="cashout"){
                                           echo "
                                           <tr>
+                                              <td>$dt</td>
                                               <td>CASHOUT</td>
                                               <td>ME</td>
                                               <td>ME</td>
                                               <td>$amount</td>
-                                              <td>$dt</td>
                                               <td>$st</td>
                                           </tr>
                                           ";
@@ -231,11 +231,11 @@
                                           $name = $getfind[0]." ".$getfind[1];
                                           echo "
                                           <tr>
+                                              <td>$dt</td>
                                               <td>RECEIVED</td>
                                               <td>ME</td>
                                               <td><a href='member?id=$payee_id'>$name</a></td>
                                               <td>$amount</td>
-                                              <td>$dt</td>
                                               <td>$st</td>
                                           </tr>
                                           ";
@@ -246,11 +246,11 @@
                                           $name = $getfind[0]." ".$getfind[1];
                                           echo "
                                           <tr>
+                                              <td>$dt</td>
                                               <td>PAY</td>
                                               <td><a href='member?id=$payer_id'>$name</a></td>
                                               <td>ME</td>
                                               <td>$amount</td>
-                                              <td>$dt</td>
                                               <td>$st</td>
                                           </tr>
                                           ";

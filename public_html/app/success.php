@@ -13,6 +13,51 @@
     header("Location:authorize");
   }
 
+
+  if(isset($_GET["pay"])){
+    $tid = decrypt($_GET["pay"]);
+    $findtid = mysql_query("SELECT count(*) FROM Transaction WHERE tid = '$tid'");
+    $gettid = mysql_fetch_array($findtid,MYSQL_NUM);
+    if($gettid[0]==1){
+      $get = mysql_query("SELECT amount, payee_id FROM Transaction WHERE tid = '$tid' ")or die(mysql_error());
+      $geta =  mysql_fetch_array($get,MYSQL_NUM);
+      $print_amount = $geta[0];
+      $payeeid = $geta[1];
+      $getapyee = mysql_query("SELECT Users.profile_img, Client.firstname, Client.lastname FROM Client, Users  WHERE Client.user_id = Users.id AND Users.id = '$payeeid' ")or die(mysql_error());
+      $py =  mysql_fetch_array($getapyee,MYSQL_NUM);
+      $friend_name = $py[1]." ".$py[2];
+      $friend_profileimg = $py[0];
+    }
+    else{
+      //echo "here1";
+      header("Location:activity");
+    }
+  }
+
+  if(isset($_GET["request"])){
+    $rid = decrypt($_GET["request"]);
+    $findtid = mysql_query("SELECT count(*) FROM Request WHERE id = '$rid'");
+    $gettid = mysql_fetch_array($findtid,MYSQL_NUM);
+    if($gettid[0]==1){
+      $get = mysql_query("SELECT amount, payer_id FROM Request WHERE id = '$rid' ")or die(mysql_error());
+      $geta =  mysql_fetch_array($get,MYSQL_NUM);
+      $print_amount = $geta[0];
+      $payerid = $geta[1];
+      $getapyee = mysql_query("SELECT Users.profile_img, Client.firstname, Client.lastname FROM Client, Users  WHERE Client.user_id = Users.id AND Users.id = '$payerid' ")or die(mysql_error());
+      $py =  mysql_fetch_array($getapyee,MYSQL_NUM);
+      $friend_name = $py[1]." ".$py[2];
+      $friend_profileimg = $py[0];
+    }
+    else{
+      //echo "here1";
+      header("Location:activity");
+    }
+  }
+  else{
+    //echo "here1";
+    header("Location:activity");
+  }
+
   $id = getUserId();
   $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.create_date, Client.phone, Users.verified, Users.profile_img, Client.credit_card_number, Client.bank_account_number, Client.credit_card_type, Client.bank_name, Client.amount FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
   $row = mysql_fetch_array($sql,MYSQL_NUM);
@@ -23,80 +68,15 @@
   $phone = $row[4];
   $verified = $row[5];
   $profile_img = $row[6];
-  $cardtype = $row[9];
-  $cardnum = $row[7];
-  $amount = $row[11];
-  if($cardnum==""){
-    header("Location:wallet?need=cc");
-  }
   $cardnum = substr(decrypt($row[7]),-4);
-  $alt = "";
-  $alt2 = "";
-
-  if(isset($_GET["topup"])&&$_GET["topup"]=="success"){
-    $get = mysql_query("SELECT amount FROM Transaction WHERE payee_id='$id' AND payer_id='$id' AND remark='topup' ORDER BY tid DESC LIMIT 1 ")or die(mysql_error());
-    $geta =  mysql_fetch_array($get,MYSQL_NUM);
-    $print_amount = $geta[0];
-    $alt = "<div class='alert alert-success' role='alert'>Transaction completed, you have top up $".$print_amount." HKD to your FriendPay account.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
-  }
-
-  if(isset($_POST["topup_submit"])){
-    $id = isloggedin();
-    if(!empty($_POST['code2'])){
-      require_once 'googleLib/GoogleAuthenticator.php';
-      $sql_auth = mysql_query("SELECT Users.google_auth_code, Users.email, Users.two_factor FROM Users WHERE Users.id='$id'")or die(mysql_error());
-      $result_auth = mysql_fetch_array($sql_auth,MYSQL_NUM);
-      $google_auth_code = decrypt($result_auth[0]);
-      $ga = new GoogleAuthenticator();
-      $code = $_POST['code2'];
-      $checkResult = $ga->verifyCode($google_auth_code, $code, 2);
-      if($checkResult){
-        $top_amount = floatval($_POST["amount"]);
-        $newamount = $top_amount + $amount;
-        mysql_query("UPDATE Client SET amount='$newamount' WHERE user_id = '$id'");
-        $now = date("Y-m-d H:i:s");
-        mysql_query("INSERT INTO Transaction(payer_id,payee_id,amount,date_time,status,remark) VAlUES('$id','$id','$top_amount','$now','success','topup')");
-        send_email($firstname,$lastname,$email,$top_amount,$cardnum);
-        header("Location: topup?topup=success");
-      }
-      else{
-        $alt = "<div class='alert alert-danger' role='alert'>Wrong code! Please try again.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
-      }
-    }
-    else{
-      $alt = "<div class='alert alert-warning' role='alert'>Fail Submission! Please try again.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
-    }
-  }
-
-  function send_email($fname,$lname,$email,$top_amount,$cardnum){
-  	$to      = $email; // Send email to our user
-  	$subject = ' Top Up -- Transaction Record | Friend Pay'; // Give the email a subject
-    $ipaddress = $_SERVER['REMOTE_ADDR'];
-    $now = date("Y-m-d H:i:s");
-  	$message = "
-  	Dear $fname $lname,
-
-  	You have just top up $ $top_amount HKD to your account with the credit card ends with $cardnum.
-    The transaction was made in $now with the device IP: $ipaddress.
-
-    If it is not you, please contact us immediately to protect your account safety.
-
-    This is a system-generated email.  Please do not reply.
-    If you did not use our service, please ignore this email.
-
-  	Best Regards,
-
-  	Friend Pay Team
-  	";
-
-  	$headers = 'From:noreply@friendpay.com' . "\r\n";
-  	mail($to, $subject, $message, $headers);
-  }
+  $print_amount = "";
+  $friend_profileimg = "";
+  $friend_name = "";
 
 ?>
 <html lang="en">
 <head>
-	<title> Send and Request | Friend Pay</title>
+	<title> Success | Friend Pay</title>
 	<?php include 'head-info.php'; ?>
   <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css' rel='stylesheet' />
   <link href="plugins/sweetalert/sweetalert.css" rel="stylesheet">
@@ -216,55 +196,30 @@
         <div class="container-fluid">
             <div class="row clearfix">
                 <div class="col-xs-12 col-sm-12">
-                  <? echo $alt;?>
-                </div>
-
-                <div class="col-xs-12 col-sm-9">
-                  <div class="body">
-                    <div class="header">
-                        <h2>
-                            Find People<br/>
-                            <small>You can search people by email address or phone number.</small>
-                            <div class="form-group">
-                            <div class="form-line">
-                              <input id="search" name="search" type="text" class='form-control' placeholder='Search Here' autofocus required>
-                           </div>
-                         </div>
-                        </h2>
+                    <div class="card">
+                        <div class="body">
+                          <form action="pay" method="POST" id="pay_form" class="form-horizontal">
+                            <div class='image-area'>
+                  						<img src='<?php echo $py[0];?>'  width='120' height='120' style="display: block; margin-left: auto; margin-right: auto; " alt='Profile Image' />
+                  					</div>
+                            <?php
+                            if(isset($_GET["pay"])){
+                              echo "<h2 style='text-align:center;'>You have ransfered $$geta[0] HKD to $py[1] $py[2], using your credit card ends with $cardnum.</h2>";
+                            }
+                            else if(isset($_GET["request"])){
+                              echo "<h2 style='text-align:center;'>You have request for $$geta[0] HKD from $py[1] $py[2].</h2>";
+                            }
+                            ?>
+                            <a href='activity' role='button' class='btn bg-yellow waves-effect m-b-15'>View My Transaction</a>
+                          </form>
+                        </div>
                     </div>
-
-                    <div class="row" id="resultfriend">
-
-                    </div>
-                  </div>
                 </div>
 
             </div>
         </div>
     </section>
-    <script>
-    $(document).ready(function(){
-      $("#search").keyup(function () {
-        var search = $(this).val();
-        if(search!=""){
-          $.ajax({
-            url:"check.php",
-            method:"POST",
-            data:{getUser:search},
-            dataType:"text",
-            success:function(response){
-              if(response!=0){
-                $('#resultfriend').html(response);
-              }
-              else{
-                $('#resultfriend').html("No result...");
-              }
-            },
-          });
-        }
-      });
-    });
-    </script>
+
     <script src="plugins/jquery/jquery.min.js"></script>
     <script src="plugins/bootstrap/js/bootstrap.js"></script>
     <script src="plugins/bootstrap-select/js/bootstrap-select.js"></script>

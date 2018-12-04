@@ -212,83 +212,70 @@
                   <? echo $alt2;?>
                 </div>
 
-
-                <div class="col-xs-12 col-sm-9">
-                  <div class="body">
-                    <div class="header">
-                        <h2>
-                            Our Interactions
-                            <small></small>
-                        </h2>
-                    </div>
-
-                    <div class="row">
-                      <?php
-                      $id = isloggedin();
-                      $sqlf1 = mysql_query("(SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payer_id = '$id' AND payee_id = '$fid' ) UNION (SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payer_id = '$fid' AND payee_id = '$id') ORDER BY date_time DESC ") or die(mysql_error());
-                      $count = 0;
-                      while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
-                        $count = $count + 1 ;
-                        $type = $arrayResult[0];
-                        $payer_id = $arrayResult[1];
-                        $payee_id = $arrayResult[2];
-                        $amount = $arrayResult[3];
-                        $dt = $arrayResult[4];
-                        $st = $arrayResult[5];
-
-                        if($payer_id==$id && $type=="transfer"){
-                          $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payee_id'");
-                          $getfind = mysql_fetch_array($find,MYSQL_NUM);
-                          $name = $getfind[0];
-                          echo "
-                          <div class='col-lg-12>
-                            <div class='card'>
-                          	  <div class='body bg-white'>
-                                <h2>$dt</h2>
-                                <hr/>
-                                <p>You have transfered $$amount HKD to $name. <span class='label bg-grey'>$st</span></p>
-                          	  </div>
-                            </div>
-                          </div>
-                          ";
-                        }
-                        else if($payee_id==$id && $type=="transfer"){
-                          $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payer_id'");
-                          $getfind = mysql_fetch_array($find,MYSQL_NUM);
-                          $name = $getfind[0]." ".$getfind[1];
-                          echo "
-                          <div class='col-lg-12>
-                            <div class='card'>
-                          	  <div class='body bg-white'>
-                                <h2>$dt</h2>
-                                <hr/>
-                                <p>$name havs transfered $$amount HKD to you. <span class='label bg-grey'>$st</span></p>
-                          	  </div>
-                            </div>
-                          </div>
-                          ";
-                        }
-                      }
-
-                      if($count==0){
-                        echo "
-                        <div class='col-lg-12>
-                          <div class='card'>
-                            <div class='body'>
-                              <h6>No record yet</h6>
-                            </div>
-                          </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>
+                                Our Interactions
+                            </h2>
                         </div>
-                        ";
-                      }
-                      ?>
-                  </div>
+                        <div class="body table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date Time</th>
+                                        <th>Transaction</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                  <?php
+                                  $id = isloggedin();
+                                  $sqlf1 = mysql_query("(SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payer_id = '$id' AND payee_id = '$fid' ) UNION (SELECT remark, payer_id, payee_id, amount, date_time, status FROM Transaction WHERE payer_id = '$fid' AND payee_id = '$id') ORDER BY date_time DESC ") or die(mysql_error());
+                                  $count = 0;
+                                  $result = "";
+                                  while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
+                                    $count = $count + 1 ;
+                                    $type = $arrayResult[0];
+                                    $payer_id = $arrayResult[1];
+                                    $payee_id = $arrayResult[2];
+                                    $amount = $arrayResult[3];
+                                    $dt = $arrayResult[4];
+                                    $st = $arrayResult[5];
 
+                                    if($payer_id==$id && $type=="transfer"){
+                                      $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payee_id'");
+                                      $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                      $name = $getfind[0];
+                                      $result .= "
+                                      <tr>
+                                          <th scope='row'>$dt</th>
+                                          <td>You have transfered $$amount HKD to $name. <span class='label bg-green'>$st</span></td>
+                                      </tr>
+                                      ";
+                                    }
+                                    else if($payee_id==$id && $type=="transfer"){
+                                      $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payer_id'");
+                                      $getfind = mysql_fetch_array($find,MYSQL_NUM);
+                                      $name = $getfind[0]." ".$getfind[1];
+                                      $result .= "
+                                      <tr>
+                                          <th scope='row'>$dt</th>
+                                          <td>$name havs transfered $$amount HKD to you.  <span class='label bg-green'>$st</span></td>
+                                      </tr>
+                                      ";
+                                    }
+                                  }
 
-                  </div>
+                                  echo $result;
+                                  ?>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-
             </div>
+
         </div>
     </section>
     <script>

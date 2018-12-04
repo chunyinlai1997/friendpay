@@ -279,10 +279,10 @@
                 $('#amount').removeClass( "is-valid" ).addClass( "is-invalid" );
               }
               else{
-                $('#invalidOldPassword').css("color","green");
-                $('#invalidOldPassword').css("display", "block");
-                $('#invalidOldPassword').html("");
-                $('#OldPassword').removeClass( "is-invalid" ).addClass( "is-valid" );
+                $('#invalid_amounts').css("color","green");
+                $('#invalid_amounts').css("display", "block");
+                $('#invalid_amounts').html("");
+                $('#amount').removeClass( "is-invalid" ).addClass( "is-valid" );
               }
             }
             checkAmountsubmit();
