@@ -19,6 +19,7 @@ echo "
   <link href='plugins/node-waves/waves.css' rel='stylesheet' />
   <link href='plugins/animate-css/animate.css' rel='stylesheet' />
   <link href='plugins/morrisjs/morris.css' rel='stylesheet' />
+  <link href='plugins/bootstrap-select/css/bootstrap-select.css' rel='stylesheet'/>
   <link href='css/style.css' rel='stylesheet'>
   <link href='css/themes/all-themes.css' rel='stylesheet' />
 

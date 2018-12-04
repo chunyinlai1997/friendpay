@@ -8,7 +8,7 @@
   }
 
   $id = getUserId();
-  $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.create_date, Client.phone, Users.verified, Users.profile_img, Users.status, Users.two_factor, Client.billing_address FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
+  $sql = mysql_query("SELECT Client.firstname, Client.lastname, Users.email, Users.create_date, Client.phone, Users.verified, Users.profile_img, Users.status, Users.two_factor, Client.billing_address, Client.credit_card_number, Client.bank_account_number, Client.credit_card_type, Client.bank_name, Client.amount FROM Client, Users WHERE Client.user_id = Users.id AND Users.id = '$id'")or die(mysql_error());
   $row = mysql_fetch_array($sql,MYSQL_NUM);
   $firstname = $row[0];
   $lastname = $row[1];
@@ -20,6 +20,11 @@
   $status = $row[7];
   $two_factor = $row[8];
   $address = $row[9];
+  $cardnum = decrypt($row[10]);
+  $bankac = decrypt($row[11]);
+  $cardtype = $row[12];
+  $bank_name = $row[13];
+  $amount = $row[14];
   $sql2 = mysql_query("SELECT date_time, status, ip FROM Login_Logging L WHERE user_id = '$id' ORDER BY date_time  DESC LIMIT 1,1 ");
   $row2 = mysql_fetch_array($sql2,MYSQL_NUM);
   $last_login_time = $row2[0];
@@ -39,6 +44,10 @@
   else if(isset($_GET["update"]) && $_GET["update"]=="profile"){
     $alt2 = "<div class='alert alert-success' role='alert'>Your profile has updated successfully.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
   }
+  else if(isset($_GET["update"]) && $_GET["update"]=="profile_fail"){
+    $alt2 = "<div class='alert alert-danger' role='alert'>Wrong Input! Symbols are not allowed.<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+  }
+
 
   if(isset($_POST['uploadprofile'])){
   	$image = base64_encode(file_get_contents($_FILES['profileimg']['tmp_name']));
@@ -79,36 +88,36 @@
       if($passwordChange == clean($passwordChange) && password_verify($passwordChange, $real_password)){
         if(!empty($inputfirstname) && !empty($inputlastname) && !empty($inputEmail) && !empty($inputPhone) && !empty($address)){
           if($inputfirstname == clean($inputfirstname) && $inputlastname == clean($inputlastname) && $inputEmail == clean($inputEmail) && $inputPhone == clean($inputPhone) && $address == clean($address)){
-          if($inputfirstname!=$real_firstname){
-            mysql_query("UPDATE Client SET firstname='$inputfirstname' WHERE user_id = '$id'") or die(mysql_error());
+            if($inputfirstname!=$real_firstname){
+              mysql_query("UPDATE Client SET firstname='$inputfirstname' WHERE user_id = '$id'") or die(mysql_error());
+            }
+            if($inputlastname!=$real_lastname){
+              mysql_query("UPDATE Client SET lastname='$inputlastname' WHERE user_id = '$id'") or die(mysql_error());
+            }
+            if($real_email!=$inputEmail){
+              $v_hash = md5(rand(0,1000));
+              mysql_query("UPDATE Users SET email='$inputEmail', verified = 0, status = 'inactive', verify_hash = '$v_hash' WHERE id = '$id'") or die(mysql_error());
+              $tmp = mysql_query("SELECT Client.firstname, Client.lastname, FROM Client WHERE Client.user_id='$id'")or die(mysql_error());
+              $getf = mysql_fetch_array($tmp,MYSQL_NUM);
+              $getfname = $getf[0];
+              $getlname = $getf[1];
+              send_email2($getfname,$getlname,$email,$v_hash);
+              header("Location: account_issue");
+            }
+            if($inputPhone!=$real_phone){
+              mysql_query("UPDATE Client SET phone='$inputPhone' WHERE user_id = '$id'") or die(mysql_error());
+            }
+            if($address!=$real_address){
+              mysql_query("UPDATE Client SET billing_address='$address' WHERE user_id = '$id'") or die(mysql_error());
+            }
+            header("Location:profile?update=profile");
           }
-          if($inputlastname!=$real_lastname){
-            mysql_query("UPDATE Client SET lastname='$inputlastname' WHERE user_id = '$id'") or die(mysql_error());
-          }
-          if($real_email!=$inputEmail){
-            $v_hash = md5(rand(0,1000));
-            mysql_query("UPDATE Users SET email='$inputEmail', verified = 0, status = 'inactive', verify_hash = '$v_hash' WHERE id = '$id'") or die(mysql_error());
-            $tmp = mysql_query("SELECT Client.firstname, Client.lastname, FROM Client WHERE Client.user_id='$id'")or die(mysql_error());
-            $getf = mysql_fetch_array($tmp,MYSQL_NUM);
-            $getfname = $getf[0];
-            $getlname = $getf[1];
-            send_email2($getfname,$getlname,$email,$v_hash);
-            header("Location: account_issue");
-          }
-          if($inputPhone){
-            mysql_query("UPDATE Client SET phone='$inputPhone' WHERE user_id = '$id'") or die(mysql_error());
-          }
-          if($address){
-            mysql_query("UPDATE Client SET billing_address='$address' WHERE user_id = '$id'") or die(mysql_error());
-          }
-          header("Location:profile?update=profile");
-        }
           else{
-            $alt2 = "<div class='alert alert-danger' role='alert'>Wrong Input! Please try again..<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+            header("Location:profile?update=profile_fail");
           }
         }
         else{
-          $alt2 = "<div class='alert alert-danger' role='alert'>Empty Input! Please try again..<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
+          $alt2 = "<div class='alert alert-danger' role='alert'>Empty Input! Please try again2<button type='button' class='close' data-dismiss='alert' aria-label='Close'></div>";
         }
       }
       else{
@@ -423,44 +432,60 @@
                     </div>
 
                     <!--Wallet card-->
-                    <div class="col-xs-12 col-sm-3">
-                      <div class="card card-about-me">
-                          <div class="header">
-                              <h2>My Wallet</h2>
-                          </div>
-                          <div class="body">
-                              <ul>
-                                  <li>
-                                      <div class="title">
-                                          <i class="material-icons"> attach_money </i>
-                                          Balance
-                                      </div>
-                                      <div class="content">
-                                          0
-                                      </div>
-                                  </li>
-                                  <li>
-                                      <div class="title">
-                                          <i class="material-icons">account_balance</i>
-                                          Bank Account
-                                      </div>
-                                      <div class="content">
-                                          ***882
-                                      </div>
-                                  </li>
-                                  <li>
-                                      <div class="title">
-                                          <i class="material-icons">credit_card</i>
-                                          Credit Card
-                                      </div>
-                                      <div class="content">
-                                        ***7477
-                                      </div>
-                                  </li>
-                              </ul>
-                          </div>
-                      </div>
+                    <div class="card card-about-me">
+                        <div class="header">
+                            <h2>My Wallet</h2>
+                        </div>
+                        <div class="body">
+                            <ul>
+                                <li>
+                                    <div class="title">
+                                        <i class="material-icons"> attach_money </i>
+                                        Balance
+                                    </div>
+                                    <div class="content">
+                                        0
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="title">
+                                        <i class="material-icons">account_balance</i>
+                                        Bank Account
+                                    </div>
+                                    <div class="content">
+                                      <?php
+                                      if($bankac!=""){
+                                        echo $bankac;
+                                      }
+                                      else{
+                                        echo "No bank account yet";
+                                      }
+                                       ?>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="title">
+                                        <i class="material-icons">credit_card</i>
+                                        Credit Card
+                                    </div>
+                                    <div class="content">
+                                      <?php
+                                      if($cardnum!=""){
+                                        echo $cardnum;
+                                      }
+                                      else{
+                                        echo "No credit card yet";
+                                      }
+                                       ?>
+                                    </div>
+                                </li>
+                                <li>
+                                  <a href="wallet"><button type="button" class="btn btn-warning waves-effect">More</button></a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
+
                 </div>
 
                 <div class="col-xs-12 col-sm-9">
@@ -473,12 +498,24 @@
                         <div class="body">
                           <p class="font-bold col-blue-grey">Friend List</p>
                           <div class="list-unstyled row clearfix">
-                            <div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
-                              <div class="image-area">
-                                  <img src="<?php echo $profile_img; ?>"  width="128" height="128" alt="Profile Image"></img>
+                            <?php
+                            $id = isloggedin();
+                            $sqlf1 = mysql_query("(SELECT user2 as F FROM Friend WHERE user1 = 8) UNION (SELECT user1 as F FROM Friend WHERE user2 = 8)") or die(mysql_error());
+                            while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
+                              $sqlf2 = mysql_query("SELECT Users.profile_img, Client.firstname, Client.lastname FROM Users, Client WHERE Users.id = Client.user_id AND Users.id='$arrayResult[0]'") or die(mysql_error());
+                              $frd = mysql_fetch_array($sqlf2,MYSQL_NUM);
+                              echo "
+                              <a href='member?id=$arrayResult[0]'><div class='col-lg-2 col-md-3 col-sm-4 col-xs-6'>
+                                <div class='image-area'>
+                                    <img src=".$frd[0]."  width='128' height='128' alt='Profile Image'></img>
+                                    ".$frd[1]." ".$frd[2]."
+                                </div>
                               </div>
-                            </div>
+                              ";
+                            }
+                            ?>
                           </div>
+                            <a href="add_friend"><button type="button" class="btn btn-info waves-effect">Add Friend</button></a>
                         </div>
                     </div>
                 </div>
@@ -860,6 +897,16 @@
           },
         });
       });
+
+      function checkEmail(email){
+        var regMail = /^([_a-zA-Z0-9-]+)(\.[_a-zA-Z0-9-]+)*@([a-zA-Z0-9-]+\.)+([a-zA-Z]{2,3})$/;
+        if(regMail.test(email)){
+            return true;
+          }
+        else{
+          return false;
+        }
+      }
     });
 
     function safeName(name){
@@ -924,10 +971,6 @@
         document.getElementById("invalidNewPasswordConfirm").style.color = "green";
       }
       finalCheckChangePassword();
-    }
-
-    function safeName(name){
-        name.value = name.value.replace(/[^/ ,a-zA-Z-'\n\r.]+/g, '');
     }
 
     function finalCheckChangePassword(){
