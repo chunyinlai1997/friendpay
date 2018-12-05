@@ -25,6 +25,12 @@
   $status = $row[7];
   $two_factor = $row[8];
   $amount = $row[9];
+
+  if(isset($_GET["cancel"])){
+    $rid = $_GET["cancel"];
+    mysql_query("UPDATE Request SET status = 'cancelled' WHERE id = '$rid'");
+    header("Location:dashboard?done");
+  }
 ?>
 
 <html lang="en">
@@ -284,12 +290,13 @@
                                     <tr>
                                         <th>Date Time</th>
                                         <th>Transaction</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                   <?php
                                   $id = isloggedin();
-                                  $sqlf1 = mysql_query("(SELECT remark, payer_id, payee_id, amount, date_time, status FROM Request WHERE payer_id = '$id' ) UNION (SELECT remark, payer_id, payee_id, amount, date_time, status FROM Request WHERE payee_id = '$id') ORDER BY date_time DESC LIMIT 10 ") or die(mysql_error());
+                                  $sqlf1 = mysql_query("(SELECT remark, payer_id, payee_id, amount, date_time, status, id FROM Request WHERE payer_id = '$id' AND status = 'requested' ) UNION (SELECT remark, payer_id, payee_id, amount, date_time, status, id FROM Request WHERE payee_id = '$id' AND status = 'requested' ) ORDER BY date_time DESC LIMIT 10 ") or die(mysql_error());
                                   $count = 0;
                                   $result = "";
                                   while($arrayResult = mysql_fetch_array($sqlf1,MYSQL_NUM)){
@@ -300,7 +307,7 @@
                                     $amount = $arrayResult[3];
                                     $dt = $arrayResult[4];
                                     $st = $arrayResult[5];
-
+                                    $rid = $arrayResult[6];
                                     if($payer_id==$id && $type=="transfer_request"){
                                       $find = mysql_query("SELECT firstname, lastname FROM Client WHERE user_id = '$payee_id'");
                                       $getfind = mysql_fetch_array($find,MYSQL_NUM);
@@ -309,6 +316,7 @@
                                       <tr>
                                           <th scope='row'>$dt</th>
                                           <td>$name have request for $$amount HKD from you. <span class='label bg-orange'>$st</span></td>
+                                          <td><a href='complete_pay?id=$payee_id&&rid=$rid' class='btn bg-green waves-effect m-b-15' role='button'>Pay Now</a></td>
                                       </tr>
                                       ";
                                     }
@@ -319,7 +327,8 @@
                                       $result .= "
                                       <tr>
                                           <th scope='row'>$dt</th>
-                                          <td>$You have request for $amount from $name.  <span class='label bg-orange'>$st</span></td>
+                                          <td>You have request for $amount from $name.  <span class='label bg-orange'>$st</span></td>
+                                          <td><a href='dashboard?cancel=$rid' class='btn bg-danger waves-effect m-b-15' role='button'>Cancel</a></td>
                                       </tr>
                                       ";
                                     }

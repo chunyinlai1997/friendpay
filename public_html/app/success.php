@@ -54,8 +54,7 @@
     }
   }
   else{
-    //echo "here1";
-    header("Location:activity");
+
   }
 
   $id = getUserId();
@@ -198,20 +197,22 @@
                 <div class="col-xs-12 col-sm-12">
                     <div class="card">
                         <div class="body">
-                          <form action="pay" method="POST" id="pay_form" class="form-horizontal">
-                            <div class='image-area'>
-                  						<img src='<?php echo $py[0];?>'  width='120' height='120' style="display: block; margin-left: auto; margin-right: auto; " alt='Profile Image' />
-                  					</div>
                             <?php
                             if(isset($_GET["pay"])){
-                              echo "<h2 style='text-align:center;'>You have ransfered $$geta[0] HKD to $py[1] $py[2], using your credit card ends with $cardnum.</h2>";
+                              $p = $py[0];
+                              echo "<div class='image-area'> <img src='$p'  width='120' height='120' style='display: block; margin-left: auto; margin-right: auto; ' alt='Profile Image' /></div>";
+                              echo "<h2 style='text-align:center;'>You have ransfered $ $geta[0] HKD to $py[1] $py[2], using your credit card ends with $cardnum.</h2>";
                             }
                             else if(isset($_GET["request"])){
+                              $p = $py[0];
+                              echo "<div class='image-area'><img src='$p'  width='120' height='120' style='display: block; margin-left: auto; margin-right: auto; ' alt='Profile Image' /></div>";
                               echo "<h2 style='text-align:center;'>You have request for $$geta[0] HKD from $py[1] $py[2].</h2>";
                             }
+                            else{
+                              echo "<h2>Not Record Found.</h2>";
+                            }
                             ?>
-                            <a href='activity' role='button' class='btn bg-yellow waves-effect m-b-15'>View My Transaction</a>
-                          </form>
+                            <a href='activity' role='button' class='btn bg-blue waves-effect m-b-15'>View My Transaction</a>
                         </div>
                     </div>
                 </div>

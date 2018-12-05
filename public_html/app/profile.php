@@ -528,7 +528,7 @@
                             }
                             ?>
                           </div>
-                            <a href="add_friend"><button type="button" class="btn btn-info waves-effect">Add Friend</button></a>
+                            <a href="send_request"><button type="button" class="btn btn-info waves-effect">Friend Friend</button></a>
                         </div>
                     </div>
                 </div>

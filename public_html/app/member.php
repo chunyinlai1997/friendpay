@@ -180,7 +180,7 @@
                                   echo "<a id='#' class='btn bg-pink waves-effect m-b-15' role='button' disabled>Friend</a>";
                                 }
                                 else{
-                                  echo "<a id='friend_btn' class='btn bg-pink waves-effect m-b-15' role='button'>Add Friend</a>";
+                                  echo "<a id='friend_btn' href='add_friend?id=$fid' class='btn bg-pink waves-effect m-b-15' role='button'>Add Friend</a>";
                                 }
                                 ?>
                                 <h3><?php echo $friend_name;?></h3>
